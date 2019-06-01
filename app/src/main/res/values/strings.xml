@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Flight Watch</string>
+    <string name="message">Watch face tapped</string>
+    <string name="my_analog_name">Flight Watch</string>
+</resources>

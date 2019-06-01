@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_color">#2a2a44</color>
+    <color name="hour_hand_color">#ffffff</color>
+    <color name="minute_hand_color">#ffffff</color>
+    <color name="second_hand_color">#ffff00</color>
+    <color name="tick_color">#ffffff</color>
+</resources>
