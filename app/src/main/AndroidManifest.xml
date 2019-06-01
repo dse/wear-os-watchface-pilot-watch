@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.webonastick.watchface.flightwatch">
+    package="com.webonastick.watchface.pilotwatch">
 
     <!-- Required to act as a custom watch face. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -21,7 +21,7 @@
             android:value="true" />
 
         <service
-            android:name=".MyWatchFace"
+            android:name="com.webonastick.watchface.pilotwatch.PilotWatchFace"
             android:label="@string/my_analog_name"
             android:permission="android.permission.BIND_WALLPAPER">
             <meta-data
