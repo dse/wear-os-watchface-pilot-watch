@@ -945,6 +945,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             if (!mAmbient) {
                 drawStopwatch(canvas);
             }
+            drawBattery(canvas);
             drawWatchFace(canvas);
 
             checkIdle();
@@ -1004,7 +1005,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             hourHand.draw(canvas, hoursRotation);
             minuteHand.draw(canvas, minutesRotation);
             secondHand.draw(canvas, secondsRotation);
+        }
 
+        private void drawBattery(Canvas canvas) {
             float batteryPercentage = -1f;
             IntentFilter intentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
             Intent batteryStatus = PilotWatchFace.this.registerReceiver(null, intentFilter);
@@ -1164,7 +1167,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private int mCustomTimeoutSeconds = 0;
-        
+
         private void setCustomTimeout(int seconds) {
             if (seconds > 0) {
                 mCustomTimeoutSeconds = seconds;
@@ -1188,6 +1191,17 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 return;
             }
             acquireWakeLock();
+        }
+
+        /**
+         * Called after every draw.
+         * Use this to clear a 'keep screen on' flag or something.
+         * Keep as a placeholder.
+         */
+        private void checkIdle() {
+            if (mCustomTimeoutSeconds <= 0) {
+                return;
+            }
         }
 
         /**
