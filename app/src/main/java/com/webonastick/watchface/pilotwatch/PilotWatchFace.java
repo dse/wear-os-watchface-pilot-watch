@@ -947,9 +947,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
             drawWatchFace(canvas);
 
-            if (mWakeLock != null) {
-                Log.d(TAG, "wakelock is " + (mWakeLock.isHeld() ? "held" : "not held"));
-            }
+            checkIdle();
         }
 
         private void drawBackground(Canvas canvas) {
@@ -1210,14 +1208,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                         "PilotWatch::WakeLockTag"
                 );
             }
-            Log.d(TAG, "acquired wakelock for " + mCustomTimeoutSeconds + " seconds");
             mWakeLock.acquire(mCustomTimeoutSeconds * 1000L);
         }
 
         private void releaseWakeLock() {
             if (mWakeLock != null) {
-                Log.d(TAG, "wakelock is " + (mWakeLock.isHeld() ? "held" : "not held"));
-                Log.d(TAG, "released wakelock");
                 mWakeLock.release();
             }
         }
