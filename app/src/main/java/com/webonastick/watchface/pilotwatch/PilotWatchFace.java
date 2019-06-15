@@ -12,13 +12,16 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.support.v4.content.ContextCompat;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.util.Pair;
 
@@ -120,6 +123,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private long updateRateMs = INTERACTIVE_UPDATE_RATE_MS;
 
         private boolean putChronographSecondsOnSubdial = true;
+
+        private boolean demoTimeMode = false;
+        private boolean emulatorMode = false;
 
         private class WatchDial {
             public WeakReference<Engine> engineWeakReference;
@@ -307,10 +313,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public void drawArc(Canvas canvas, float radius, Paint paint) {
                 float startAngle = this.startAngle;
-                float endAngle   = this.endAngle;
+                float endAngle = this.endAngle;
                 if (startAngle > endAngle) {
                     startAngle = this.endAngle;
-                    endAngle   = this.startAngle;
+                    endAngle = this.startAngle;
                 }
                 if (excludeTicksFrom == 0f && excludeTicksTo == 0f) {
                     canvas.drawArc(
@@ -402,8 +408,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 paint.setStyle(Paint.Style.FILL);
                 if (engine.mAmbient) {
                     paint.setColor(Color.WHITE);
+                    paint.clearShadowLayer();
                 } else {
                     paint.setColor(color);
+                    paint.setShadowLayer(0, 0, 2, Color.BLACK);
                 }
                 if (engine.mLowBitAmbient) {
                     paint.setAntiAlias(false);
@@ -484,16 +492,25 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         WatchHand chronographMinuteHand;
         WatchHand chronographHourHand;
         WatchHand batteryHand;
-        
+
         Typeface typeface = Typeface.SANS_SERIF;
-        
+
         @Override
         public void onCreate(SurfaceHolder holder) {
+            if (Build.MODEL.startsWith("sdk_") || Build.FINGERPRINT.contains("/sdk_")) {
+                emulatorMode = true;
+            }
+
             super.onCreate(holder);
 
-            setWatchFaceStyle(new WatchFaceStyle.Builder(PilotWatchFace.this)
-                    .setAcceptsTapEvents(true)
-                    .build());
+            WatchFaceStyle.Builder builder;
+            WatchFaceStyle style;
+
+            builder = new WatchFaceStyle.Builder(PilotWatchFace.this);
+            builder = builder.setAcceptsTapEvents(true);
+            style = builder.build();
+
+            setWatchFaceStyle(style);
 
             mCalendar = Calendar.getInstance();
 
@@ -601,7 +618,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             subDial4.tickWidth3 = 0.0025f;
             subDial4.nonAmbientOnly = false;
             subDial4.startAngle = 150f;
-            subDial4.endAngle   = 30f;
+            subDial4.endAngle = 30f;
             subDial4.excludeTicksFrom = 0.4f;
             subDial4.excludeTicksTo = 0.6f;
             subDial4.circle1 = 1f;
@@ -663,8 +680,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             batteryHand.length = 0.9f;
             batteryHand.width = 0.02f;
 
+            clearIdle();
             updateDials();
             updateHands();
+
+            setCustomTimeout(20);
         }
 
         private void updateDials() {
@@ -685,7 +705,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             chronographHourHand.update();
             batteryHand.update();
         }
-        
+
         private void setUpdateRate() {
             if (putChronographSecondsOnSubdial) {
                 if (stopwatchRunning) {
@@ -731,6 +751,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             /* Check and trigger whether or not timer should be running (only in active mode). */
             updateTimer();
+
+            if (!mAmbient) {
+                clearIdle();
+            }
         }
 
         @Override
@@ -768,6 +792,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             initBackgroundBitmap();
             initAmbientBackgroundBitmap();
+
+            if (!mAmbient) {
+                clearIdle();
+            }
         }
 
         private void initBackgroundBitmap() {
@@ -792,8 +820,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             subDial4.draw(backgroundCanvas, true);
         }
 
-        private final float DAY_DATE_TEXT_SIZE = 0.05f;
-        private final float DAY_DATE_OUTER = 0.86f;
+        private final float DAY_DATE_TEXT_SIZE = 0.0625f;
+        private final float DAY_DATE_OUTER = 0.87f;
 
         private float mDayDateTextSize;
         private float mDayWindowCenterX;
@@ -887,16 +915,30 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     } else if (subDial2.contains(x, y)) {
                         stopwatchButton2();
                         updateTimer();
+                    } else if (subDial3.contains(x, y) && emulatorMode) {
+                        demoTimeMode = !demoTimeMode;
+                        updateTimer();
                     }
                     break;
             }
             invalidate();
+            if (!mAmbient) {
+                clearIdle();
+            }
         }
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
             long now = System.currentTimeMillis();
-            mCalendar.setTimeInMillis(now);
+
+            if (demoTimeMode) {
+                mCalendar.setTimeInMillis(
+                        // 2019-06-30 10:10:32.500
+                        1561903832500L
+                );
+            } else {
+                mCalendar.setTimeInMillis(now);
+            }
 
             drawBackground(canvas);
             drawDate(canvas);
@@ -904,6 +946,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 drawStopwatch(canvas);
             }
             drawWatchFace(canvas);
+
+            if (mWakeLock != null) {
+                Log.d(TAG, "wakelock is " + (mWakeLock.isHeld() ? "held" : "not held"));
+            }
         }
 
         private void drawBackground(Canvas canvas) {
@@ -950,8 +996,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             final float seconds = (float) s + (float) ms / 1000f; /* 0 to 60 */
-            final float minutes = (float) m + seconds / 60f; /* 0 to 60 */
-            final float hours = (float) h + minutes / 60f; /* 0 to 12 */
+            final float minutes = (float) m + seconds / 60f;      /* 0 to 60 */
+            final float hours = (float) h + minutes / 60f;      /* 0 to 12 */
 
             final float secondsRotation = seconds / 60f;
             final float minutesRotation = minutes / 60f;
@@ -982,7 +1028,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void drawStopwatch(Canvas canvas) {
-            final long totalMs = getStopwatchTimeMs();
+            long totalMs = getStopwatchTimeMs();
+
+            if (demoTimeMode) {
+                totalMs = 500 + 1000 * (32 + 60 * (10 + (60 * 10)));
+            }
 
             final float msRotation = (totalMs % 1000) / 1000f;
             final float sRotation = (totalMs % 60000) / 60000f;
@@ -1113,6 +1163,63 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             final Rect bounds = new Rect();
             paint.getTextBounds(text, 0, text.length(), bounds);
             canvas.drawText(text, x, y - (bounds.bottom + bounds.top) / 2f, paint);
+        }
+
+        private int mCustomTimeoutSeconds = 0;
+        
+        private void setCustomTimeout(int seconds) {
+            if (seconds > 0) {
+                mCustomTimeoutSeconds = seconds;
+                acquireWakeLock();
+            } else {
+                mCustomTimeoutSeconds = 0;
+                releaseWakeLock();
+            }
+        }
+
+        private void clearCustomTimeout() {
+            mCustomTimeoutSeconds = 0;
+            releaseWakeLock();
+        }
+
+        /**
+         * Call after user activity, screen change, etc.
+         */
+        private void clearIdle() {
+            if (mCustomTimeoutSeconds <= 0) {
+                return;
+            }
+            acquireWakeLock();
+        }
+
+        /**
+         * For keeping the watch face on longer than the standard
+         * period of time.
+         */
+
+        PowerManager mPowerManager = null;
+        PowerManager.WakeLock mWakeLock = null;
+
+        private void acquireWakeLock() {
+            if (mPowerManager == null) {
+                mPowerManager = (PowerManager)getSystemService(POWER_SERVICE);
+            }
+            if (mWakeLock == null) {
+                mWakeLock = mPowerManager.newWakeLock(
+                        PowerManager.FULL_WAKE_LOCK,
+                        "PilotWatch::WakeLockTag"
+                );
+            }
+            Log.d(TAG, "acquired wakelock for " + mCustomTimeoutSeconds + " seconds");
+            mWakeLock.acquire(mCustomTimeoutSeconds * 1000L);
+        }
+
+        private void releaseWakeLock() {
+            if (mWakeLock != null) {
+                Log.d(TAG, "wakelock is " + (mWakeLock.isHeld() ? "held" : "not held"));
+                Log.d(TAG, "released wakelock");
+                mWakeLock.release();
+            }
         }
     }
 }
