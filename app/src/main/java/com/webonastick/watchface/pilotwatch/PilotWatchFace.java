@@ -84,6 +84,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
     }
 
+    public static class MoreMath {
+        public static float mod(float x, float y) {
+            return x - (float) Math.floor(x / y) * y;
+        }
+    }
+
     private class Engine extends CanvasWatchFaceService.Engine {
         private static final String TAG = "PilotWatchFace";
 
@@ -118,6 +124,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private int mHeight;
 
         private Bitmap mBackgroundBitmap;
+        private Bitmap mBackgroundBitmapZoomSubDial4;
         private Bitmap mAmbientBackgroundBitmap;
 
         private long updateRateMs = INTERACTIVE_UPDATE_RATE_MS;
@@ -166,6 +173,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             private float pTickWidth2;
             private float pTickWidth3;
 
+            private float leftBoundary;
+            private float rightBoundary;
+            private float topBoundary;
+            private float bottomBoundary;
+
             public void addText(float rotation, String text) {
                 textPairs.add(new Pair<>(rotation, text));
             }
@@ -191,6 +203,51 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 pTickWidth1 = engine.mDiameter * tickWidth1;
                 pTickWidth2 = engine.mDiameter * tickWidth2;
                 pTickWidth3 = engine.mDiameter * tickWidth3;
+                updateBoundaries();
+            }
+
+            private void updateBoundaries() {
+                Engine engine = engineWeakReference.get();
+                if (startAngle == 0f && endAngle == 360f) {
+                    leftBoundary   = pCenterX - pRadius * tickOuter;
+                    rightBoundary  = pCenterX + pRadius * tickOuter;
+                    topBoundary    = pCenterY - pRadius * tickOuter;
+                    bottomBoundary = pCenterY + pRadius * tickOuter;
+                } else {
+                    leftBoundary   = pCenterX;
+                    rightBoundary  = pCenterX;
+                    topBoundary    = pCenterY;
+                    bottomBoundary = pCenterY;
+                    float minAngle = Math.min(startAngle, endAngle);
+                    float maxAngle = Math.max(startAngle, endAngle);
+                    float angle = minAngle;
+                    while (true) {
+                        Log.d(TAG, "angle = " + angle);
+                        float pointX = pCenterX + pRadius * (float) Math.sin(angle * Math.PI / 180.0);
+                        float pointY = pCenterY - pRadius * (float) Math.cos(angle * Math.PI / 180.0);
+                        Log.d(TAG, "  pointX = " + pointX);
+                        Log.d(TAG, "  pointY = " + pointY);
+                        leftBoundary   = Math.min(leftBoundary,   pointX);
+                        rightBoundary  = Math.max(rightBoundary,  pointX);
+                        topBoundary    = Math.min(topBoundary,    pointY);
+                        bottomBoundary = Math.max(bottomBoundary, pointY);
+                        if (angle == maxAngle) {
+                            break;
+                        }
+                        angle += 90f;                                  // e.g., 36 => 126
+                        angle = (float)Math.floor(angle / 90f) * 90f;  // e.g., 126 => 90
+                        angle = Math.min(angle, maxAngle);
+                    }
+                    Log.d(TAG, "leftBoundary   = " + leftBoundary);
+                    Log.d(TAG, "rightBoundary  = " + rightBoundary);
+                    Log.d(TAG, "topBoundary    = " + topBoundary);
+                    Log.d(TAG, "bottomBoundary = " + bottomBoundary);
+                }
+                float fudge = engine.mDiameter * 0.02f;
+                leftBoundary   -= fudge;
+                rightBoundary  += fudge;
+                topBoundary    -= fudge;
+                bottomBoundary += fudge;
             }
 
             public void draw(Canvas canvas, Boolean ambient) {
@@ -200,16 +257,25 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     return;
                 }
 
+                drawTicks(canvas, ambient);
+                drawCircles(canvas, ambient);
+                drawText(canvas, ambient);
+            }
+
+            public void drawTicks(Canvas canvas, Boolean ambient) {
+                Engine engine = engineWeakReference.get();
+
                 Paint paint = new Paint();
                 paint.setAntiAlias(true);
                 if (ambient) {
                     paint.setColor(Color.WHITE);
                 } else {
                     paint.setColor(engine.mTickColor);
-                    // paint.setShadowLayer(1, 0, 1, Color.BLACK);
                 }
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeCap(Paint.Cap.BUTT);
+
+                float extend = getCircleStrokeWidth() / 2;
 
                 paint.setStrokeWidth(pTickWidth1);
                 for (int i = 0; i <= ticks1; i += 1) {
@@ -222,8 +288,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     canvas.save();
                     canvas.rotate(degrees, pCenterX, pCenterY);
                     canvas.drawLine(
-                            pCenterX, pCenterY - pTickOuter,
-                            pCenterX, pCenterY - pTickInner1,
+                            pCenterX, pCenterY - pTickOuter - extend,
+                            pCenterX, pCenterY - pTickInner1 + extend,
                             paint
                     );
                     canvas.restore();
@@ -244,8 +310,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     canvas.save();
                     canvas.rotate(degrees, pCenterX, pCenterY);
                     canvas.drawLine(
-                            pCenterX, pCenterY - pTickOuter,
-                            pCenterX, pCenterY - pTickInner2,
+                            pCenterX, pCenterY - pTickOuter - extend,
+                            pCenterX, pCenterY - pTickInner2 + extend,
                             paint
                     );
                     canvas.restore();
@@ -270,24 +336,61 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                         canvas.save();
                         canvas.rotate(degrees, pCenterX, pCenterY);
                         canvas.drawLine(
-                                pCenterX, pCenterY - pTickOuter,
-                                pCenterX, pCenterY - pTickInner3,
+                                pCenterX, pCenterY - pTickOuter - extend,
+                                pCenterX, pCenterY - pTickInner3 + extend,
                                 paint
                         );
                         canvas.restore();
                     }
                 }
-
+            }
+            
+            public float getCircleStrokeWidth() {
+                Engine engine = engineWeakReference.get();
                 if (circleWidth != 0f) {
-                    paint.setStrokeWidth(circleWidth * engine.mDiameter);
+                    return circleWidth * engine.mDiameter;
                 }
+                if (tickWidth3 != 0f) {
+                    return tickWidth3 * engine.mDiameter;
+                }
+                if (tickWidth2 != 0f) {
+                    return tickWidth2 * engine.mDiameter;
+                }
+                if (tickWidth1 != 0f) {
+                    return tickWidth1 * engine.mDiameter;
+                }
+                return 0f;
+            }
+
+            public void drawCircles(Canvas canvas, Boolean ambient) {
+                Engine engine = engineWeakReference.get();
+
+                float strokeWidth = getCircleStrokeWidth();
+                if (strokeWidth == 0f) {
+                    return;
+                }
+
+                Paint paint = new Paint();
+                paint.setAntiAlias(true);
+                if (ambient) {
+                    paint.setColor(Color.WHITE);
+                } else {
+                    paint.setColor(engine.mTickColor);
+                }
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeCap(Paint.Cap.BUTT);
+                paint.setStrokeWidth(strokeWidth);
+
                 if (circle1 != 0f) {
                     drawArc(canvas, circle1, paint);
                 }
                 if (circle2 != 0f) {
                     drawArc(canvas, circle2, paint);
                 }
+            }
 
+            public void drawText(Canvas canvas, Boolean ambient) {
+                Engine engine = engineWeakReference.get();
                 Paint textPaint = new Paint();
                 textPaint.setTypeface(typeface);
                 textPaint.setColor(Color.WHITE);
@@ -344,9 +447,25 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
 
+            public boolean containsAngle(float angle) {
+                float maxAngle = Math.max(startAngle, endAngle);
+                float minAngle = Math.min(startAngle, endAngle);
+                angle = angle - MoreMath.mod(minAngle, 360f) + minAngle;
+                return angle >= minAngle && angle <= maxAngle;
+            }
+
             public boolean contains(int x, int y) {
                 float dx = 0.0f + x - pCenterX;
                 float dy = 0.0f + y - pCenterY;
+                if (dx == 0.0f && dy == 0.0f) {
+                    return true;
+                }
+                if (!(startAngle == 0f && endAngle == 360f)) { /* defaults */
+                    float angle = (float)Math.atan2(x, -y) * 180f / (float)Math.PI;
+                    if (!containsAngle(angle)) {
+                        return false;
+                    }
+                }
                 return dx * dx + dy * dy <= pRadius * pRadius;
             }
 
@@ -361,6 +480,33 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float getArcSweepAngle(float startRotation, float endRotation) {
                 return (endAngle - startAngle) * (endRotation - startRotation);
             }
+
+            public void zoom(Canvas canvas) {
+                Engine engine = engineWeakReference.get();
+
+                float newCenterX = (leftBoundary + rightBoundary) / 2f;
+                float newCenterY = (topBoundary + bottomBoundary) / 2f;
+                float dx = newCenterX - pCenterX;
+                float dy = newCenterY - pCenterY;
+                float scale = Math.min(
+                        engine.mWidth / (rightBoundary - leftBoundary),
+                        engine.mHeight / (bottomBoundary - topBoundary)
+                );
+                canvas.scale(scale, scale, newCenterX, newCenterY);
+                canvas.translate(-dx, -dy);
+            }
+        }
+
+        private void zoomCanvas(Canvas canvas, float x1, float x2, float y1, float y2) {
+            float centerX = (x1 + x2) / 2;
+            float centerY = (y1 + y2) / 2;
+            float dx = centerX - mCenterX;
+            float dy = centerY - mCenterY;
+            float scaleX = mWidth / (x2 - x1);
+            float scaleY = mHeight / (y2 - y1);
+            float scale = Math.min(scaleX, scaleY);
+            canvas.scale(scale, scale, centerX, centerY);
+            canvas.translate(-dx, -dy);
         }
 
         private class WatchHand {
@@ -494,6 +640,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         WatchHand batteryHand;
 
         Typeface typeface = Typeface.SANS_SERIF;
+
+        boolean zoomOnSubDial4 = false;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -746,6 +894,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             super.onAmbientModeChanged(inAmbientMode);
             mAmbient = inAmbientMode;
 
+            if (mAmbient) {
+                zoomOnSubDial4 = false;
+            }
+
             updateDials();
             updateHands();
 
@@ -773,6 +925,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
 
+            zoomOnSubDial4 = false;
+
             mDiameter = Math.min(width, height);
             mRadius = mDiameter / 2f;
             mCenterX = width / 2f;
@@ -791,6 +945,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             updateHands();
 
             initBackgroundBitmap();
+            initBackgroundBitmapZoomSubDial4();
             initAmbientBackgroundBitmap();
 
             if (!mAmbient) {
@@ -801,6 +956,18 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private void initBackgroundBitmap() {
             mBackgroundBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmap);
+            drawClockDial(backgroundCanvas, false);
+            mainDial.draw(backgroundCanvas, false);
+            subDial1.draw(backgroundCanvas, false);
+            subDial2.draw(backgroundCanvas, false);
+            subDial3.draw(backgroundCanvas, false);
+            subDial4.draw(backgroundCanvas, false);
+        }
+
+        private void initBackgroundBitmapZoomSubDial4() {
+            mBackgroundBitmapZoomSubDial4 = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+            Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoomSubDial4);
+            subDial4.zoom(backgroundCanvas);
             drawClockDial(backgroundCanvas, false);
             mainDial.draw(backgroundCanvas, false);
             subDial1.draw(backgroundCanvas, false);
@@ -909,15 +1076,22 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     // The user has started a different gesture or otherwise cancelled the tap.
                     break;
                 case TAP_TYPE_TAP:
-                    if (subDial1.contains(x, y)) {
-                        stopwatchButton1();
-                        updateTimer();
-                    } else if (subDial2.contains(x, y)) {
-                        stopwatchButton2();
-                        updateTimer();
-                    } else if (subDial3.contains(x, y) && emulatorMode) {
-                        demoTimeMode = !demoTimeMode;
-                        updateTimer();
+                    if (zoomOnSubDial4) {
+                        zoomOnSubDial4 = false;
+                    } else {
+                        if (subDial1.contains(x, y)) {
+                            stopwatchButton1();
+                            updateTimer();
+                        } else if (subDial2.contains(x, y)) {
+                            stopwatchButton2();
+                            updateTimer();
+                        } else if (subDial3.contains(x, y) && emulatorMode) {
+                            demoTimeMode = !demoTimeMode;
+                            updateTimer();
+                        } else if (subDial4.contains(x, y)) {
+                            zoomOnSubDial4 = true;
+                            updateTimer();
+                        }
                     }
                     break;
             }
@@ -941,12 +1115,19 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             drawBackground(canvas);
+            if (zoomOnSubDial4) {
+                canvas.save();
+                subDial4.zoom(canvas);
+            }
             drawDate(canvas);
             if (!mAmbient) {
                 drawStopwatch(canvas);
             }
             drawBattery(canvas);
             drawWatchFace(canvas);
+            if (zoomOnSubDial4) {
+                canvas.restore();
+            }
 
             checkIdle();
         }
@@ -956,6 +1137,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 canvas.drawBitmap(mAmbientBackgroundBitmap, 0, 0, null);
             } else if (mAmbient) {
                 canvas.drawBitmap(mAmbientBackgroundBitmap, 0, 0, null);
+            } else if (zoomOnSubDial4) {
+                canvas.drawBitmap(mBackgroundBitmapZoomSubDial4, 0, 0, null);
             } else {
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, null);
             }
@@ -1214,7 +1397,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         private void acquireWakeLock() {
             if (mPowerManager == null) {
-                mPowerManager = (PowerManager)getSystemService(POWER_SERVICE);
+                mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
             }
             if (mWakeLock == null) {
                 mWakeLock = mPowerManager.newWakeLock(
