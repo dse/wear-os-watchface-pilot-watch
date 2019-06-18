@@ -624,25 +624,25 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        WatchDial mainDial;
-        WatchDial subDial1;
-        WatchDial subDial2;
-        WatchDial subDial3;
-        WatchDial subDial4;
+        private WatchDial mainDial;
+        private WatchDial subDial1;
+        private WatchDial subDial2;
+        private WatchDial subDial3;
+        private WatchDial subDial4;
 
-        WatchHand hourHand;
-        WatchHand minuteHand;
-        WatchHand secondHand;
+        private WatchHand hourHand;
+        private WatchHand minuteHand;
+        private WatchHand secondHand;
 
-        WatchHand chronographSecondFractionHand;
-        WatchHand chronographSecondHand;
-        WatchHand chronographMinuteHand;
-        WatchHand chronographHourHand;
-        WatchHand batteryHand;
+        private WatchHand chronographSecondFractionHand;
+        private WatchHand chronographSecondHand;
+        private WatchHand chronographMinuteHand;
+        private WatchHand chronographHourHand;
+        private WatchHand batteryHand;
 
-        Typeface typeface = Typeface.SANS_SERIF;
+        private Typeface typeface = Typeface.SANS_SERIF;
 
-        boolean zoomOnSubDial4 = false;
+        private boolean zoomOnSubDial4 = false;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
