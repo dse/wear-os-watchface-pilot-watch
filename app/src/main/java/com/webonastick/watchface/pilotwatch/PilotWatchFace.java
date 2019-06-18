@@ -1389,21 +1389,40 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         private PowerManager mPowerManager = null;
         private PowerManager.WakeLock mWakeLock = null;
+        private boolean fullWakeLockIsImpossible = false;
 
         private void acquireWakeLock() {
+            if (fullWakeLockIsImpossible) {
+                return;
+            }
             if (mPowerManager == null) {
-                mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
+                try {
+                    mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
+                } catch (Exception e) {
+                    Log.d(TAG, "error creating PowerManager object: " + e.getLocalizedMessage());
+                    fullWakeLockIsImpossible = true;
+                    return;
+                }
             }
             if (mWakeLock == null) {
-                mWakeLock = mPowerManager.newWakeLock(
-                        PowerManager.FULL_WAKE_LOCK,
-                        "PilotWatch::WakeLockTag"
-                );
+                try {
+                    mWakeLock = mPowerManager.newWakeLock(
+                            PowerManager.FULL_WAKE_LOCK,
+                            "PilotWatch::WakeLockTag"
+                    );
+                } catch (Exception e) {
+                    Log.d(TAG, "error creating full wake lock: " + e.getLocalizedMessage());
+                    fullWakeLockIsImpossible = true;
+                    return;
+                }
             }
             mWakeLock.acquire(mCustomTimeoutSeconds * 1000L);
         }
 
         private void releaseWakeLock() {
+            if (fullWakeLockIsImpossible) {
+                return;
+            }
             if (mWakeLock != null) {
                 mWakeLock.release();
             }
