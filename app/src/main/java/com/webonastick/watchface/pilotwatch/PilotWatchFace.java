@@ -244,11 +244,19 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     Log.d(TAG, "pixelTopBoundary    = " + pixelTopBoundary);
                     Log.d(TAG, "pixelBottomBoundary = " + pixelBottomBoundary);
                 }
+
+                /* add fudge factor */
                 float fudge = engine.mDiameter * 0.02f;
                 pixelLeftBoundary -= fudge;
                 pixelRightBoundary += fudge;
                 pixelTopBoundary -= fudge;
                 pixelBottomBoundary += fudge;
+
+                /* don't put boundaries past the boundaries of the canvas */
+                pixelLeftBoundary = Math.max(pixelLeftBoundary, 0);
+                pixelRightBoundary = Math.min(pixelRightBoundary, engine.mWidth);
+                pixelTopBoundary = Math.max(pixelTopBoundary, 0);
+                pixelBottomBoundary = Math.min(pixelBottomBoundary, engine.mHeight);
             }
 
             public void draw(Canvas canvas, Boolean ambient) {
@@ -462,7 +470,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     return true;
                 }
                 if (!(startAngle == 0f && endAngle == 360f)) { /* defaults */
-                    float angle = (float) Math.atan2(x, -y) * 180f / (float) Math.PI;
+                    float angle = (float) Math.atan2(dx, -dy) * 180f / (float) Math.PI;
+                    Log.d(TAG, "tap angle: " + angle);
                     if (!containsAngle(angle)) {
                         return false;
                     }
@@ -499,14 +508,23 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void zoomCanvas(Canvas canvas, float x1, float x2, float y1, float y2) {
-            float centerX = (x1 + x2) / 2;
-            float centerY = (y1 + y2) / 2;
+            float fudge = Math.min(canvas.getWidth(), canvas.getHeight()) * 0.02f;
+            zoomCanvas(canvas, x1, x2, y1, y2, fudge);
+        }
+
+        private void zoomCanvas(Canvas canvas, float x1, float x2, float y1, float y2, float fudge) {
+            x1 = Math.max(x1 - fudge, 0);
+            x2 = Math.min(x2 + fudge, canvas.getWidth());
+            y1 = Math.max(y1 - fudge, 0);
+            y2 = Math.min(y2 + fudge, canvas.getHeight());
+            float centerX = (x1 + x2) / 2f;
+            float centerY = (y1 + y2) / 2f;
             float dx = centerX - mCenterX;
             float dy = centerY - mCenterY;
             float scaleX = mWidth / (x2 - x1);
             float scaleY = mHeight / (y2 - y1);
             float scale = Math.min(scaleX, scaleY);
-            canvas.scale(scale, scale, centerX, centerY);
+            canvas.scale(scale, scale, mCenterX, mCenterY);
             canvas.translate(-dx, -dy);
         }
 
@@ -968,7 +986,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private void initBackgroundBitmapZoomSubDial4() {
             mBackgroundBitmapZoomSubDial4 = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoomSubDial4);
-            subDial4.zoom(backgroundCanvas);
+            zoomCanvas(backgroundCanvas, mDayDateLeft, mDayDateRight, mDayDateTop, mDayDateBottom);
             drawClockDial(backgroundCanvas, false);
             mainDial.draw(backgroundCanvas, false);
             subDial1.draw(backgroundCanvas, false);
@@ -994,8 +1012,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private float mDayDateTextSize;
         private float mDayWindowCenterX;
         private float mDateWindowCenterX;
-        private float mDayDateWindowTopY;
-        private float mDayDateWindowBottomY;
+        private float mDayDateTop;
+        private float mDayDateBottom;
+        private float mDayDateLeft;
+        private float mDayDateRight;
         private Paint mDayDateTextPaint;
 
         private void drawClockDial(Canvas canvas, boolean ambient) {
@@ -1024,28 +1044,36 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             mDayDateTextSize = mDiameter * DAY_DATE_TEXT_SIZE;
-            float mDateWindowRightX = mCenterX + mRadius * DAY_DATE_OUTER;
-            float mDateWindowLeftX = mDateWindowRightX - maxDateWidth - mDiameter * 0.02f;
-            float mDayWindowRightX = mDateWindowLeftX - mDiameter * 0.01f;
-            float mDayWindowLeftX = mDayWindowRightX - maxDayWidth - mDiameter * 0.02f;
-            mDayWindowCenterX = (mDayWindowLeftX + mDayWindowRightX) / 2f;
-            mDateWindowCenterX = (mDateWindowLeftX + mDateWindowRightX) / 2f;
-            mDayDateWindowTopY = mCenterY - mDayDateTextSize * 0.6f;
-            mDayDateWindowBottomY = mCenterY + mDayDateTextSize * 0.6f;
+
+            /* 1 to 31, outer */
+            float dateWindowRightX = mCenterX + mRadius * DAY_DATE_OUTER;
+            float dateWindowLeftX = dateWindowRightX - maxDateWidth - mDiameter * 0.02f;
+
+            /* SUN to SAY, inner */
+            float dayWindowRightX = dateWindowLeftX - mDiameter * 0.01f;
+            float dayWindowLeftX = dayWindowRightX - maxDayWidth - mDiameter * 0.02f;
+
+            mDayWindowCenterX = (dayWindowLeftX + dayWindowRightX) / 2f;
+            mDateWindowCenterX = (dateWindowLeftX + dateWindowRightX) / 2f;
+
+            mDayDateTop    = mCenterY - mDayDateTextSize * 0.6f;
+            mDayDateBottom = mCenterY + mDayDateTextSize * 0.6f;
+            mDayDateLeft   = dayWindowLeftX;
+            mDayDateRight  = dateWindowRightX;
 
             Path dialPath = new Path();
             dialPath.addRect(0, 0, width, height, Path.Direction.CW);
 
             Path dateWindowPath = new Path();
             dateWindowPath.addRect(
-                    mDateWindowLeftX, mDayDateWindowTopY,
-                    mDateWindowRightX, mDayDateWindowBottomY, Path.Direction.CW
+                    dateWindowLeftX, mDayDateTop,
+                    dateWindowRightX, mDayDateBottom, Path.Direction.CW
             );
 
             Path dayWindowPath = new Path();
             dayWindowPath.addRect(
-                    mDayWindowLeftX, mDayDateWindowTopY,
-                    mDayWindowRightX, mDayDateWindowBottomY, Path.Direction.CW
+                    dayWindowLeftX, mDayDateTop,
+                    dayWindowRightX, mDayDateBottom, Path.Direction.CW
             );
 
             dialPath.op(dateWindowPath, Path.Op.DIFFERENCE);
@@ -1118,7 +1146,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             drawBackground(canvas);
             if (zoomOnSubDial4) {
                 canvas.save();
-                subDial4.zoom(canvas);
+                zoomCanvas(canvas, mDayDateLeft, mDayDateRight, mDayDateTop, mDayDateBottom);
             }
             drawDate(canvas);
             if (!mAmbient) {
