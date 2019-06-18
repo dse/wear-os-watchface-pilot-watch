@@ -1374,12 +1374,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         /**
          * Called after every draw.
          * Use this to clear a 'keep screen on' flag or something.
-         * Keep as a placeholder.
+         * DO NOT DELETE THIS METHOD.  Keep it as a placeholder.
          */
         private void checkIdle() {
             if (mCustomTimeoutSeconds <= 0) {
                 return;
             }
+            // DO NOT DELETE THIS METHOD.
         }
 
         /**
