@@ -523,8 +523,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float arrowHeadSize = 3f;
             public float length = 1;
             public float width = 0.01f;
-            public float shroudRadius = 0.03f;
-            public float shroudHoleRadius = 0.01f;
+            public float shroudThingyRadius = 0.03f;
+            public float shroudThingyHoleRadius = 0.01f;
 
             private float pixelLength;
             private float pixelWidth;
@@ -542,8 +542,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 pixelLength = length * dial.pixelRadius;
                 pixelWidth = width * engine.mRadius;
 
-                pixelShroudThingyHoleRadius = shroudHoleRadius * engine.mRadius;
-                pixelShroudThingyRadius = shroudRadius * engine.mRadius;
+                pixelShroudThingyHoleRadius = shroudThingyHoleRadius * engine.mRadius;
+                pixelShroudThingyRadius = shroudThingyRadius * engine.mRadius;
                 if (pixelShroudThingyRadius < pixelWidth) {
                     pixelShroudThingyRadius = pixelWidth;
                 }
@@ -570,7 +570,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public void updatePath() {
                 WatchDial dial = watchDialWeakReference.get();
-                Engine engine = dial.engineWeakReference.get();
 
                 path = new Path();
 
