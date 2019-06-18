@@ -1387,8 +1387,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
          * period of time.
          */
 
-        PowerManager mPowerManager = null;
-        PowerManager.WakeLock mWakeLock = null;
+        private PowerManager mPowerManager = null;
+        private PowerManager.WakeLock mWakeLock = null;
 
         private void acquireWakeLock() {
             if (mPowerManager == null) {
