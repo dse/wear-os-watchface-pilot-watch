@@ -7,11 +7,9 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.BatteryManager;
 import android.os.Build;
@@ -468,7 +466,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDY : 0);
 
                 Paint textPaint = new Paint();
-                textPaint.setTypeface(typeface);
+                textPaint.setTypeface(mTypeface);
                 if (isShadow) {
                     textPaint.setColor(Color.BLACK);
                 } else {
@@ -724,25 +722,25 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private WatchDial mainDial;
-        private WatchDial subDial1;
-        private WatchDial subDial2;
-        private WatchDial subDial3;
-        private WatchDial subDial4;
+        private WatchDial mMainDial;
+        private WatchDial mSubDial1;
+        private WatchDial mSubDial2;
+        private WatchDial mSubDial3;
+        private WatchDial mSubDial4;
 
-        private WatchHand hourHand;
-        private WatchHand minuteHand;
-        private WatchHand secondHand;
+        private WatchHand mHourHand;
+        private WatchHand mMinuteHand;
+        private WatchHand mSecondHand;
 
-        private WatchHand chronographSecondFractionHand;
-        private WatchHand chronographSecondHand;
-        private WatchHand chronographMinuteHand;
-        private WatchHand chronographHourHand;
-        private WatchHand batteryHand;
+        private WatchHand mChronographSecondFractionHand;
+        private WatchHand mChronographSecondHand;
+        private WatchHand mChronographMinuteHand;
+        private WatchHand mChronographHourHand;
+        private WatchHand mBatteryHand;
 
-        private Typeface typeface = Typeface.SANS_SERIF;
+        private Typeface mTypeface = Typeface.SANS_SERIF;
 
-        private boolean zoomOnSubDial4 = false;
+        private boolean mZoomOnSubDial4 = false;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -771,199 +769,199 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSecondHandColor = ContextCompat.getColor(getApplicationContext(), R.color.second_hand_color);
             mTickColor = ContextCompat.getColor(getApplicationContext(), R.color.tick_color);
 
-            mainDial = new WatchDial(this);
-            mainDial.radius = 1f;
-            mainDial.centerX = 0.0f;
-            mainDial.centerY = 0.0f;
-            mainDial.ticks1 = 12;
-            mainDial.ticks2 = 60;
-            mainDial.ticks3 = 300;
-            mainDial.tickOuter = 0.99f;
-            mainDial.tickInner1 = 0.90f;
-            mainDial.tickInner2 = 0.93f;
-            mainDial.tickInner3 = 0.96f;
-            mainDial.tickStrokeWidth1 = 0.01f;
-            mainDial.tickStrokeWidth2 = 0.005f;
-            mainDial.tickStrokeWidth3 = 0.0025f;
-            mainDial.nonAmbientOnly = false;
-            mainDial.circle1 = 0.99f;
-            mainDial.circle2 = 0.96f;
-            mainDial.circleStrokeWidth = 0.0025f;
+            mMainDial = new WatchDial(this);
+            mMainDial.radius = 1f;
+            mMainDial.centerX = 0.0f;
+            mMainDial.centerY = 0.0f;
+            mMainDial.ticks1 = 12;
+            mMainDial.ticks2 = 60;
+            mMainDial.ticks3 = 300;
+            mMainDial.tickOuter = 0.99f;
+            mMainDial.tickInner1 = 0.90f;
+            mMainDial.tickInner2 = 0.93f;
+            mMainDial.tickInner3 = 0.96f;
+            mMainDial.tickStrokeWidth1 = 0.01f;
+            mMainDial.tickStrokeWidth2 = 0.005f;
+            mMainDial.tickStrokeWidth3 = 0.0025f;
+            mMainDial.nonAmbientOnly = false;
+            mMainDial.circle1 = 0.99f;
+            mMainDial.circle2 = 0.96f;
+            mMainDial.circleStrokeWidth = 0.0025f;
 
-            subDial1 = new WatchDial(this);
-            subDial1.radius = 0.3f;
-            subDial1.centerX = 0f;
-            subDial1.centerY = -0.25f;
-            subDial1.ticks1 = 10;
-            subDial1.ticks2 = 50;
-            subDial1.tickOuter = 1f;
-            subDial1.tickInner1 = 0.80f;
-            subDial1.tickInner2 = 0.90f;
-            subDial1.tickStrokeWidth1 = 0.005f;
-            subDial1.tickStrokeWidth2 = 0.0025f;
-            subDial1.nonAmbientOnly = true;
-            subDial1.circle1 = 1f;
-            subDial1.circle2 = 0.90f;
-            subDial1.circleStrokeWidth = 0.0025f;
-            subDial1.darkOpacity = 0.2f;
-            subDial1.addText(0.0f, "0");
-            subDial1.addText(0.2f, "2");
-            subDial1.addText(0.4f, "4");
-            subDial1.addText(0.6f, "6");
-            subDial1.addText(0.8f, "8");
+            mSubDial1 = new WatchDial(this);
+            mSubDial1.radius = 0.3f;
+            mSubDial1.centerX = 0f;
+            mSubDial1.centerY = -0.25f;
+            mSubDial1.ticks1 = 10;
+            mSubDial1.ticks2 = 50;
+            mSubDial1.tickOuter = 1f;
+            mSubDial1.tickInner1 = 0.80f;
+            mSubDial1.tickInner2 = 0.90f;
+            mSubDial1.tickStrokeWidth1 = 0.005f;
+            mSubDial1.tickStrokeWidth2 = 0.0025f;
+            mSubDial1.nonAmbientOnly = true;
+            mSubDial1.circle1 = 1f;
+            mSubDial1.circle2 = 0.90f;
+            mSubDial1.circleStrokeWidth = 0.0025f;
+            mSubDial1.darkOpacity = 0.2f;
+            mSubDial1.addText(0.0f, "0");
+            mSubDial1.addText(0.2f, "2");
+            mSubDial1.addText(0.4f, "4");
+            mSubDial1.addText(0.6f, "6");
+            mSubDial1.addText(0.8f, "8");
 
-            subDial2 = new WatchDial(this);
-            subDial2.radius = 0.3f;
-            subDial2.centerX = -0.25f;
-            subDial2.centerY = 0f;
-            subDial2.ticks1 = 12;
-            subDial2.ticks2 = 60;
-            subDial2.tickOuter = 1f;
-            subDial2.tickInner1 = 0.80f;
-            subDial2.tickInner2 = 0.90f;
-            subDial2.tickStrokeWidth1 = 0.005f;
-            subDial2.tickStrokeWidth2 = 0.0025f;
-            subDial2.nonAmbientOnly = true;
-            subDial2.circle1 = 1f;
-            subDial2.circle2 = 0.9f;
-            subDial2.circleStrokeWidth = 0.0025f;
-            subDial2.darkOpacity = 0.2f;
-            subDial2.addText(0.00f, "12");
-            subDial2.addText(0.25f, "3");
-            subDial2.addText(0.50f, "6");
-            subDial2.addText(0.75f, "9");
+            mSubDial2 = new WatchDial(this);
+            mSubDial2.radius = 0.3f;
+            mSubDial2.centerX = -0.25f;
+            mSubDial2.centerY = 0f;
+            mSubDial2.ticks1 = 12;
+            mSubDial2.ticks2 = 60;
+            mSubDial2.tickOuter = 1f;
+            mSubDial2.tickInner1 = 0.80f;
+            mSubDial2.tickInner2 = 0.90f;
+            mSubDial2.tickStrokeWidth1 = 0.005f;
+            mSubDial2.tickStrokeWidth2 = 0.0025f;
+            mSubDial2.nonAmbientOnly = true;
+            mSubDial2.circle1 = 1f;
+            mSubDial2.circle2 = 0.9f;
+            mSubDial2.circleStrokeWidth = 0.0025f;
+            mSubDial2.darkOpacity = 0.2f;
+            mSubDial2.addText(0.00f, "12");
+            mSubDial2.addText(0.25f, "3");
+            mSubDial2.addText(0.50f, "6");
+            mSubDial2.addText(0.75f, "9");
 
-            subDial3 = new WatchDial(this);
-            subDial3.radius = 0.3f;
-            subDial3.centerX = 0f;
-            subDial3.centerY = 0.25f;
-            subDial3.ticks1 = 12;
-            subDial3.ticks2 = 60;
-            subDial3.tickOuter = 1f;
-            subDial3.tickInner1 = 0.80f;
-            subDial3.tickInner2 = 0.90f;
-            subDial3.tickStrokeWidth1 = 0.005f;
-            subDial3.tickStrokeWidth2 = 0.0025f;
-            subDial3.nonAmbientOnly = true;
-            subDial3.circle1 = 1f;
-            subDial3.circle2 = 0.9f;
-            subDial3.circleStrokeWidth = 0.0025f;
-            subDial3.darkOpacity = 0.2f;
-            subDial3.addText(0.00f, "60");
-            subDial3.addText(0.25f, "15");
-            subDial3.addText(0.50f, "30");
-            subDial3.addText(0.75f, "45");
+            mSubDial3 = new WatchDial(this);
+            mSubDial3.radius = 0.3f;
+            mSubDial3.centerX = 0f;
+            mSubDial3.centerY = 0.25f;
+            mSubDial3.ticks1 = 12;
+            mSubDial3.ticks2 = 60;
+            mSubDial3.tickOuter = 1f;
+            mSubDial3.tickInner1 = 0.80f;
+            mSubDial3.tickInner2 = 0.90f;
+            mSubDial3.tickStrokeWidth1 = 0.005f;
+            mSubDial3.tickStrokeWidth2 = 0.0025f;
+            mSubDial3.nonAmbientOnly = true;
+            mSubDial3.circle1 = 1f;
+            mSubDial3.circle2 = 0.9f;
+            mSubDial3.circleStrokeWidth = 0.0025f;
+            mSubDial3.darkOpacity = 0.2f;
+            mSubDial3.addText(0.00f, "60");
+            mSubDial3.addText(0.25f, "15");
+            mSubDial3.addText(0.50f, "30");
+            mSubDial3.addText(0.75f, "45");
 
-            subDial4 = new WatchDial(this);
-            subDial4.radius = 0.5f;
-            subDial4.centerX = 0.125f;
-            subDial4.centerY = 0f;
-            subDial4.ticks1 = 2;
-            subDial4.ticks2 = 10;
-            subDial4.ticks3 = 20;
-            subDial4.tickOuter = 1f;
-            subDial4.tickInner1 = 0.80f;
-            subDial4.tickInner2 = 0.86f;
-            subDial4.tickInner3 = 0.92f;
-            subDial4.tickStrokeWidth1 = 0.01f;
-            subDial4.tickStrokeWidth2 = 0.005f;
-            subDial4.tickStrokeWidth3 = 0.0025f;
-            subDial4.nonAmbientOnly = false;
-            subDial4.startAngle = 150f;
-            subDial4.endAngle = 30f;
-            subDial4.excludeTicksFrom = 0.4f;
-            subDial4.excludeTicksTo = 0.6f;
-            subDial4.circle1 = 1f;
-            subDial4.circle2 = 0.92f;
-            subDial4.circleStrokeWidth = 0.0025f;
-            subDial4.addText(0.00f, "0%");
-            subDial4.addText(1.00f, "100%");
+            mSubDial4 = new WatchDial(this);
+            mSubDial4.radius = 0.5f;
+            mSubDial4.centerX = 0.125f;
+            mSubDial4.centerY = 0f;
+            mSubDial4.ticks1 = 2;
+            mSubDial4.ticks2 = 10;
+            mSubDial4.ticks3 = 20;
+            mSubDial4.tickOuter = 1f;
+            mSubDial4.tickInner1 = 0.80f;
+            mSubDial4.tickInner2 = 0.86f;
+            mSubDial4.tickInner3 = 0.92f;
+            mSubDial4.tickStrokeWidth1 = 0.01f;
+            mSubDial4.tickStrokeWidth2 = 0.005f;
+            mSubDial4.tickStrokeWidth3 = 0.0025f;
+            mSubDial4.nonAmbientOnly = false;
+            mSubDial4.startAngle = 150f;
+            mSubDial4.endAngle = 30f;
+            mSubDial4.excludeTicksFrom = 0.4f;
+            mSubDial4.excludeTicksTo = 0.6f;
+            mSubDial4.circle1 = 1f;
+            mSubDial4.circle2 = 0.92f;
+            mSubDial4.circleStrokeWidth = 0.0025f;
+            mSubDial4.addText(0.00f, "0%");
+            mSubDial4.addText(1.00f, "100%");
 
-            chronographSecondFractionHand = new WatchHand(subDial1);
-            chronographSecondFractionHand.color = mSecondHandColor;
-            chronographSecondFractionHand.nonAmbientOnly = true;
-            chronographSecondFractionHand.length = 0.9f;
-            chronographSecondFractionHand.width = 0.02f;
-            chronographSecondFractionHand.shadowRadius = 2f;
+            mChronographSecondFractionHand = new WatchHand(mSubDial1);
+            mChronographSecondFractionHand.color = mSecondHandColor;
+            mChronographSecondFractionHand.nonAmbientOnly = true;
+            mChronographSecondFractionHand.length = 0.9f;
+            mChronographSecondFractionHand.width = 0.02f;
+            mChronographSecondFractionHand.shadowRadius = 2f;
 
-            chronographSecondHand = new WatchHand(subDial3);
-            chronographSecondHand.color = mSecondHandColor;
-            chronographSecondHand.nonAmbientOnly = true;
-            chronographSecondHand.length = 0.9f;
-            chronographSecondHand.width = 0.02f;
-            chronographSecondHand.shadowRadius = 2f;
+            mChronographSecondHand = new WatchHand(mSubDial3);
+            mChronographSecondHand.color = mSecondHandColor;
+            mChronographSecondHand.nonAmbientOnly = true;
+            mChronographSecondHand.length = 0.9f;
+            mChronographSecondHand.width = 0.02f;
+            mChronographSecondHand.shadowRadius = 2f;
 
-            chronographMinuteHand = new WatchHand(subDial2);
-            chronographMinuteHand.color = mMinuteHandColor;
-            chronographMinuteHand.nonAmbientOnly = true;
-            chronographMinuteHand.hasArrowHead = true;
-            chronographMinuteHand.length = 0.8f;
-            chronographMinuteHand.width = 0.02f;
-            chronographMinuteHand.shadowRadius = 3f;
+            mChronographMinuteHand = new WatchHand(mSubDial2);
+            mChronographMinuteHand.color = mMinuteHandColor;
+            mChronographMinuteHand.nonAmbientOnly = true;
+            mChronographMinuteHand.hasArrowHead = true;
+            mChronographMinuteHand.length = 0.8f;
+            mChronographMinuteHand.width = 0.02f;
+            mChronographMinuteHand.shadowRadius = 3f;
 
-            chronographHourHand = new WatchHand(subDial2);
-            chronographHourHand.color = mHourHandColor;
-            chronographHourHand.nonAmbientOnly = true;
-            chronographHourHand.hasArrowHead = true;
-            chronographHourHand.length = 0.8f * 0.7f;
-            chronographHourHand.width = 0.02f;
-            chronographHourHand.shadowRadius = 2f;
+            mChronographHourHand = new WatchHand(mSubDial2);
+            mChronographHourHand.color = mHourHandColor;
+            mChronographHourHand.nonAmbientOnly = true;
+            mChronographHourHand.hasArrowHead = true;
+            mChronographHourHand.length = 0.8f * 0.7f;
+            mChronographHourHand.width = 0.02f;
+            mChronographHourHand.shadowRadius = 2f;
 
-            secondHand = new WatchHand(mainDial);
-            secondHand.color = mSecondHandColor;
-            secondHand.nonAmbientOnly = true;
-            secondHand.length = 0.95f;
-            secondHand.width = 0.02f;
-            secondHand.shadowRadius = 6f;
+            mSecondHand = new WatchHand(mMainDial);
+            mSecondHand.color = mSecondHandColor;
+            mSecondHand.nonAmbientOnly = true;
+            mSecondHand.length = 0.95f;
+            mSecondHand.width = 0.02f;
+            mSecondHand.shadowRadius = 6f;
 
-            minuteHand = new WatchHand(mainDial);
-            minuteHand.color = mMinuteHandColor;
-            minuteHand.nonAmbientOnly = false;
-            minuteHand.hasArrowHead = true;
-            minuteHand.length = 0.9f;
-            minuteHand.width = 0.04f;
-            minuteHand.shadowRadius = 5f;
+            mMinuteHand = new WatchHand(mMainDial);
+            mMinuteHand.color = mMinuteHandColor;
+            mMinuteHand.nonAmbientOnly = false;
+            mMinuteHand.hasArrowHead = true;
+            mMinuteHand.length = 0.9f;
+            mMinuteHand.width = 0.04f;
+            mMinuteHand.shadowRadius = 5f;
 
-            hourHand = new WatchHand(mainDial);
-            hourHand.color = mHourHandColor;
-            hourHand.nonAmbientOnly = false;
-            hourHand.hasArrowHead = true;
-            hourHand.length = 0.9f * 0.7f;
-            hourHand.width = 0.04f;
-            hourHand.shadowRadius = 4f;
+            mHourHand = new WatchHand(mMainDial);
+            mHourHand.color = mHourHandColor;
+            mHourHand.nonAmbientOnly = false;
+            mHourHand.hasArrowHead = true;
+            mHourHand.length = 0.9f * 0.7f;
+            mHourHand.width = 0.04f;
+            mHourHand.shadowRadius = 4f;
 
-            batteryHand = new WatchHand(subDial4);
-            batteryHand.color = mSecondHandColor;
-            batteryHand.nonAmbientOnly = false;
-            batteryHand.hasArrowHead = true;
-            batteryHand.length = 0.9f;
-            batteryHand.width = 0.02f;
-            batteryHand.shadowRadius = 2f;
+            mBatteryHand = new WatchHand(mSubDial4);
+            mBatteryHand.color = mSecondHandColor;
+            mBatteryHand.nonAmbientOnly = false;
+            mBatteryHand.hasArrowHead = true;
+            mBatteryHand.length = 0.9f;
+            mBatteryHand.width = 0.02f;
+            mBatteryHand.shadowRadius = 2f;
 
             clearIdle();
             updateDials();
             updateHands();
 
-            setCustomTimeout(20);
+            setCustomTimeout(15);
         }
 
         private void updateDials() {
-            mainDial.update();
-            subDial1.update();
-            subDial2.update();
-            subDial3.update();
-            subDial4.update();
+            mMainDial.update();
+            mSubDial1.update();
+            mSubDial2.update();
+            mSubDial3.update();
+            mSubDial4.update();
         }
 
         private void updateHands() {
-            hourHand.update();
-            minuteHand.update();
-            secondHand.update();
-            batteryHand.update();
-            chronographHourHand.update();
-            chronographMinuteHand.update();
-            chronographSecondHand.update();
-            chronographSecondFractionHand.update();
+            mHourHand.update();
+            mMinuteHand.update();
+            mSecondHand.update();
+            mBatteryHand.update();
+            mChronographHourHand.update();
+            mChronographMinuteHand.update();
+            mChronographSecondHand.update();
+            mChronographSecondFractionHand.update();
         }
 
         private void setUpdateRate() {
@@ -1007,7 +1005,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mAmbient = inAmbientMode;
 
             if (mAmbient) {
-                zoomOnSubDial4 = false;
+                mZoomOnSubDial4 = false;
             }
 
             updateDials();
@@ -1037,7 +1035,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
 
-            zoomOnSubDial4 = false;
+            mZoomOnSubDial4 = false;
 
             mDiameter = Math.min(width, height);
             mRadius = mDiameter / 2f;
@@ -1050,7 +1048,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mDayDateTextPaint.setAntiAlias(true);
             mDayDateTextPaint.setTextSize(mDiameter * DAY_DATE_TEXT_SIZE);
             mDayDateTextPaint.setColor(Color.BLACK);
-            mDayDateTextPaint.setTypeface(typeface);
+            mDayDateTextPaint.setTypeface(mTypeface);
             mDayDateTextPaint.setTextAlign(Paint.Align.CENTER);
 
             updateDials();
@@ -1069,11 +1067,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mBackgroundBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmap);
             drawClockDial(backgroundCanvas, false);
-            mainDial.draw(backgroundCanvas, false);
-            subDial1.draw(backgroundCanvas, false);
-            subDial2.draw(backgroundCanvas, false);
-            subDial3.draw(backgroundCanvas, false);
-            subDial4.draw(backgroundCanvas, false);
+            mMainDial.draw(backgroundCanvas, false);
+            mSubDial1.draw(backgroundCanvas, false);
+            mSubDial2.draw(backgroundCanvas, false);
+            mSubDial3.draw(backgroundCanvas, false);
+            mSubDial4.draw(backgroundCanvas, false);
         }
 
         private void initBackgroundBitmapZoomSubDial4() {
@@ -1081,22 +1079,22 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoomSubDial4);
             zoomCanvas(backgroundCanvas, mDayDateLeft, mDayDateRight, mDayDateTop, mDayDateBottom);
             drawClockDial(backgroundCanvas, false);
-            mainDial.draw(backgroundCanvas, false);
-            subDial1.draw(backgroundCanvas, false);
-            subDial2.draw(backgroundCanvas, false);
-            subDial3.draw(backgroundCanvas, false);
-            subDial4.draw(backgroundCanvas, false);
+            mMainDial.draw(backgroundCanvas, false);
+            mSubDial1.draw(backgroundCanvas, false);
+            mSubDial2.draw(backgroundCanvas, false);
+            mSubDial3.draw(backgroundCanvas, false);
+            mSubDial4.draw(backgroundCanvas, false);
         }
 
         private void initAmbientBackgroundBitmap() {
             mAmbientBackgroundBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mAmbientBackgroundBitmap);
             drawClockDial(backgroundCanvas, true);
-            mainDial.draw(backgroundCanvas, true);
-            subDial1.draw(backgroundCanvas, true);
-            subDial2.draw(backgroundCanvas, true);
-            subDial3.draw(backgroundCanvas, true);
-            subDial4.draw(backgroundCanvas, true);
+            mMainDial.draw(backgroundCanvas, true);
+            mSubDial1.draw(backgroundCanvas, true);
+            mSubDial2.draw(backgroundCanvas, true);
+            mSubDial3.draw(backgroundCanvas, true);
+            mSubDial4.draw(backgroundCanvas, true);
         }
 
         private final float DAY_DATE_TEXT_SIZE = 0.0625f;
@@ -1199,20 +1197,20 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     break;
                 case TAP_TYPE_TAP:
                     Log.d(TAG, "TAP: " + x + ", " + y + ", " + eventTime);
-                    if (zoomOnSubDial4) {
-                        zoomOnSubDial4 = false;
+                    if (mZoomOnSubDial4) {
+                        mZoomOnSubDial4 = false;
                     } else {
-                        if (subDial1.contains(x, y)) {
+                        if (mSubDial1.contains(x, y)) {
                             stopwatchButton1();
                             updateTimer();
-                        } else if (subDial2.contains(x, y)) {
+                        } else if (mSubDial2.contains(x, y)) {
                             stopwatchButton2();
                             updateTimer();
-                        } else if (subDial3.contains(x, y) && mEmulatorMode) {
+                        } else if (mSubDial3.contains(x, y) && mEmulatorMode) {
                             mDemoTimeMode = !mDemoTimeMode;
                             updateTimer();
-                        } else if (subDial4.contains(x, y)) {
-                            zoomOnSubDial4 = true;
+                        } else if (mSubDial4.contains(x, y)) {
+                            mZoomOnSubDial4 = true;
                             updateTimer();
                         }
                     }
@@ -1235,7 +1233,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             drawBackground(canvas);
-            if (zoomOnSubDial4) {
+            if (mZoomOnSubDial4) {
                 canvas.save();
                 zoomCanvas(canvas, mDayDateLeft, mDayDateRight, mDayDateTop, mDayDateBottom);
             }
@@ -1245,7 +1243,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
             drawBattery(canvas);
             drawWatchFace(canvas);
-            if (zoomOnSubDial4) {
+            if (mZoomOnSubDial4) {
                 canvas.restore();
             }
 
@@ -1257,7 +1255,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 canvas.drawBitmap(mAmbientBackgroundBitmap, 0, 0, null);
             } else if (mAmbient) {
                 canvas.drawBitmap(mAmbientBackgroundBitmap, 0, 0, null);
-            } else if (zoomOnSubDial4) {
+            } else if (mZoomOnSubDial4) {
                 canvas.drawBitmap(mBackgroundBitmapZoomSubDial4, 0, 0, null);
             } else {
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, null);
@@ -1305,9 +1303,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             final float minutesRotation = minutes / 60f;
             final float hoursRotation = hours / 12f;
 
-            hourHand.draw(canvas, hoursRotation);
-            minuteHand.draw(canvas, minutesRotation);
-            secondHand.draw(canvas, secondsRotation);
+            mHourHand.draw(canvas, hoursRotation);
+            mMinuteHand.draw(canvas, minutesRotation);
+            mSecondHand.draw(canvas, secondsRotation);
         }
 
         private void drawBattery(Canvas canvas) {
@@ -1328,7 +1326,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             float batteryRotation = batteryPercentage / 100f;
-            batteryHand.draw(canvas, batteryRotation);
+            mBatteryHand.draw(canvas, batteryRotation);
         }
 
         private void drawStopwatch(Canvas canvas) {
@@ -1343,10 +1341,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             final float minuteHandRotationDegrees = (totalMs % 3600000) / 3600000f;
             final float hourHandRotationDegrees = (totalMs % 43200000) / 43200000f;
 
-            chronographHourHand.draw(canvas, hourHandRotationDegrees);
-            chronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
-            chronographSecondHand.draw(canvas, secondHandRotationDegrees);
-            chronographSecondFractionHand.draw(canvas, millisecondHandRotationDegrees);
+            mChronographHourHand.draw(canvas, hourHandRotationDegrees);
+            mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
+            mChronographSecondHand.draw(canvas, secondHandRotationDegrees);
+            mChronographSecondFractionHand.draw(canvas, millisecondHandRotationDegrees);
         }
 
         @Override
@@ -1509,10 +1507,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         private PowerManager mPowerManager = null;
         private PowerManager.WakeLock mWakeLock = null;
-        private boolean fullWakeLockIsImpossible = false;
+        private boolean mFullWakeLockDenied = false;
 
         private void acquireWakeLock() {
-            if (fullWakeLockIsImpossible) {
+            if (mFullWakeLockDenied) {
                 return;
             }
             if (mPowerManager == null) {
@@ -1520,7 +1518,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
                 } catch (Exception e) {
                     Log.d(TAG, "error creating PowerManager object: " + e.getLocalizedMessage());
-                    fullWakeLockIsImpossible = true;
+                    mFullWakeLockDenied = true;
                     return;
                 }
             }
@@ -1532,7 +1530,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     );
                 } catch (Exception e) {
                     Log.d(TAG, "error creating full wake lock: " + e.getLocalizedMessage());
-                    fullWakeLockIsImpossible = true;
+                    mFullWakeLockDenied = true;
                     return;
                 }
             }
@@ -1540,7 +1538,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void releaseWakeLock() {
-            if (fullWakeLockIsImpossible) {
+            if (mFullWakeLockDenied) {
                 return;
             }
             if (mWakeLock != null) {
