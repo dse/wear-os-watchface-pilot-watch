@@ -229,11 +229,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     float maxAngle = Math.max(startAngle, endAngle);
                     float angle = minAngle;
                     while (true) {
-                        Log.d(TAG, "angle = " + angle);
                         float pointX = pixelCenterX + pixelRadius * (float) Math.sin(angle * Math.PI / 180.0);
                         float pointY = pixelCenterY - pixelRadius * (float) Math.cos(angle * Math.PI / 180.0);
-                        Log.d(TAG, "  pointX = " + pointX);
-                        Log.d(TAG, "  pointY = " + pointY);
                         pixelLeftBoundary = Math.min(pixelLeftBoundary, pointX);
                         pixelRightBoundary = Math.max(pixelRightBoundary, pointX);
                         pixelTopBoundary = Math.min(pixelTopBoundary, pointY);
@@ -245,10 +242,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                         angle = (float) Math.floor(angle / 90f) * 90f;  // e.g., 126 => 90
                         angle = Math.min(angle, maxAngle);
                     }
-                    Log.d(TAG, "pixelLeftBoundary   = " + pixelLeftBoundary);
-                    Log.d(TAG, "pixelRightBoundary  = " + pixelRightBoundary);
-                    Log.d(TAG, "pixelTopBoundary    = " + pixelTopBoundary);
-                    Log.d(TAG, "pixelBottomBoundary = " + pixelBottomBoundary);
                 }
 
                 /* add fudge factor */
@@ -544,7 +537,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
                 if (!(startAngle == 0f && endAngle == 360f)) { /* defaults */
                     float angle = (float) Math.atan2(dx, -dy) * 180f / (float) Math.PI;
-                    Log.d(TAG, "tap angle: " + angle);
                     if (!containsAngle(angle)) {
                         return false;
                     }
@@ -1196,7 +1188,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     // The user has started a different gesture or otherwise cancelled the tap.
                     break;
                 case TAP_TYPE_TAP:
-                    Log.d(TAG, "TAP: " + x + ", " + y + ", " + eventTime);
                     if (mZoomOnSubDial4) {
                         mZoomOnSubDial4 = false;
                     } else {
@@ -1517,7 +1508,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 try {
                     mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
                 } catch (Exception e) {
-                    Log.d(TAG, "error creating PowerManager object: " + e.getLocalizedMessage());
+                    Log.e(TAG, "error creating PowerManager object: " + e.getLocalizedMessage());
                     mFullWakeLockDenied = true;
                     return;
                 }
@@ -1529,7 +1520,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                             "PilotWatch::WakeLockTag"
                     );
                 } catch (Exception e) {
-                    Log.d(TAG, "error creating full wake lock: " + e.getLocalizedMessage());
+                    Log.e(TAG, "error creating full wake lock: " + e.getLocalizedMessage());
                     mFullWakeLockDenied = true;
                     return;
                 }
