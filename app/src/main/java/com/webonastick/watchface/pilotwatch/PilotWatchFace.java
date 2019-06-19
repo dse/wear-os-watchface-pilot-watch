@@ -1198,6 +1198,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     // The user has started a different gesture or otherwise cancelled the tap.
                     break;
                 case TAP_TYPE_TAP:
+                    Log.d(TAG, "TAP: " + x + ", " + y + ", " + eventTime);
                     if (zoomOnSubDial4) {
                         zoomOnSubDial4 = false;
                     } else {
