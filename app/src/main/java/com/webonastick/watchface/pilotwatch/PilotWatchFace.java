@@ -183,6 +183,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             private float pixelTopBoundary;
             private float pixelBottomBoundary;
 
+            private int shadowColor = Color.BLACK;
+            private float shadowDX = 0;
+            private float shadowDY = 1;
+
             public void addText(float rotation, String text) {
                 textPairs.add(new Pair<>(rotation, text));
             }
@@ -271,10 +275,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
 
                 drawOpaqueLayer(canvas, ambient);
+                if (!ambient && shadowColor != 0 && (shadowDX != 0 || shadowDY != 0)) {
+                    drawTicks(canvas, ambient, true);
+                    drawCircles(canvas, ambient, true);
+                    drawText(canvas, ambient, true);
+                }
                 drawTicks(canvas, ambient);
                 drawCircles(canvas, ambient);
                 drawText(canvas, ambient);
             }
+
             public void drawOpaqueLayer(Canvas canvas, Boolean ambient) {
                 if (ambient) {
                     return;
@@ -291,14 +301,28 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             public void drawTicks(Canvas canvas, Boolean ambient) {
+                drawTicks(canvas, ambient, false);
+            }
+
+            public void drawTicks(Canvas canvas, Boolean ambient, Boolean isShadow) {
+                if (isShadow && (ambient || (shadowDX == 0 && shadowDY == 0))) {
+                    return;
+                }
                 Engine engine = engineWeakReference.get();
+
+                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDX : 0);
+                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDY : 0);
 
                 Paint paint = new Paint();
                 paint.setAntiAlias(true);
                 if (ambient) {
                     paint.setColor(Color.WHITE);
                 } else {
-                    paint.setColor(engine.mTickColor);
+                    if (isShadow) {
+                        paint.setColor(Color.BLACK);
+                    } else {
+                        paint.setColor(engine.mTickColor);
+                    }
                 }
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeCap(Paint.Cap.BUTT);
@@ -391,6 +415,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             public void drawCircles(Canvas canvas, Boolean ambient) {
+                drawCircles(canvas, ambient, false);
+            }
+
+            public void drawCircles(Canvas canvas, Boolean ambient, Boolean isShadow) {
+                if (isShadow && (ambient || (shadowDX == 0 && shadowDY == 0))) {
+                    return;
+                }
+
                 Engine engine = engineWeakReference.get();
 
                 float strokeWidth = getCircleStrokeWidth();
@@ -403,25 +435,45 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 if (ambient) {
                     paint.setColor(Color.WHITE);
                 } else {
-                    paint.setColor(engine.mTickColor);
+                    if (isShadow) {
+                        paint.setColor(Color.BLACK);
+                    } else {
+                        paint.setColor(engine.mTickColor);
+                    }
                 }
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeCap(Paint.Cap.BUTT);
                 paint.setStrokeWidth(strokeWidth);
 
                 if (circle1 != 0f) {
-                    drawArc(canvas, circle1, paint);
+                    drawArc(canvas, circle1, paint, isShadow);
                 }
                 if (circle2 != 0f) {
-                    drawArc(canvas, circle2, paint);
+                    drawArc(canvas, circle2, paint, isShadow);
                 }
             }
 
             public void drawText(Canvas canvas, Boolean ambient) {
+                drawText(canvas, ambient, false);
+            }
+
+            public void drawText(Canvas canvas, Boolean ambient, Boolean isShadow) {
+                if (isShadow && (ambient || (shadowDX == 0 && shadowDY == 0))) {
+                    return;
+                }
+
                 Engine engine = engineWeakReference.get();
+
+                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDX : 0);
+                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDY : 0);
+
                 Paint textPaint = new Paint();
                 textPaint.setTypeface(typeface);
-                textPaint.setColor(Color.WHITE);
+                if (isShadow) {
+                    textPaint.setColor(Color.BLACK);
+                } else {
+                    textPaint.setColor(Color.WHITE);
+                }
                 textPaint.setTextSize(engine.mDiameter * textSize);
                 textPaint.setAntiAlias(true);
                 textPaint.setTextAlign(Paint.Align.CENTER);
@@ -442,13 +494,17 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
 
-            public void drawArc(Canvas canvas, float radius, Paint paint) {
+            public void drawArc(Canvas canvas, float radius, Paint paint, Boolean isShadow) {
                 float startAngle = this.startAngle;
                 float endAngle = this.endAngle;
                 if (startAngle > endAngle) {
                     startAngle = this.endAngle;
                     endAngle = this.startAngle;
                 }
+
+                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDX : 0);
+                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDY : 0);
+
                 if (excludeTicksFrom == 0f && excludeTicksTo == 0f) {
                     canvas.drawArc(
                             pixelCenterX - radius * pixelRadius, pixelCenterY - radius * pixelRadius,
@@ -568,6 +624,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             private float pixelShroudThingyRadius;
             private float pixelShroudThingyHoleRadius;
 
+            private float shadowRadius = 0;
+            private int shadowColor = Color.BLACK;
+
             public WatchHand(WatchDial watchDial) {
                 watchDialWeakReference = new WeakReference<WatchDial>(watchDial);
             }
@@ -596,7 +655,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     paint.clearShadowLayer();
                 } else {
                     paint.setColor(color);
-                    paint.setShadowLayer(0, 0, 2, Color.BLACK);
+                    if (shadowColor != 0 && shadowRadius != 0) {
+                        paint.setShadowLayer(shadowRadius, 0, 0, shadowColor);
+                    } else {
+                        paint.clearShadowLayer();
+                    }
                 }
                 if (engine.mLowBitAmbient) {
                     paint.setAntiAlias(false);
@@ -821,12 +884,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             chronographSecondFractionHand.nonAmbientOnly = true;
             chronographSecondFractionHand.length = 0.9f;
             chronographSecondFractionHand.width = 0.02f;
+            chronographSecondFractionHand.shadowRadius = 2f;
 
             chronographSecondHand = new WatchHand(subDial3);
             chronographSecondHand.color = mSecondHandColor;
             chronographSecondHand.nonAmbientOnly = true;
             chronographSecondHand.length = 0.9f;
             chronographSecondHand.width = 0.02f;
+            chronographSecondHand.shadowRadius = 2f;
 
             chronographMinuteHand = new WatchHand(subDial2);
             chronographMinuteHand.color = mMinuteHandColor;
@@ -834,6 +899,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             chronographMinuteHand.hasArrowHead = true;
             chronographMinuteHand.length = 0.8f;
             chronographMinuteHand.width = 0.02f;
+            chronographMinuteHand.shadowRadius = 3f;
 
             chronographHourHand = new WatchHand(subDial2);
             chronographHourHand.color = mHourHandColor;
@@ -841,12 +907,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             chronographHourHand.hasArrowHead = true;
             chronographHourHand.length = 0.8f * 0.7f;
             chronographHourHand.width = 0.02f;
+            chronographHourHand.shadowRadius = 2f;
 
             secondHand = new WatchHand(mainDial);
             secondHand.color = mSecondHandColor;
             secondHand.nonAmbientOnly = true;
             secondHand.length = 0.95f;
             secondHand.width = 0.02f;
+            secondHand.shadowRadius = 6f;
 
             minuteHand = new WatchHand(mainDial);
             minuteHand.color = mMinuteHandColor;
@@ -854,6 +922,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             minuteHand.hasArrowHead = true;
             minuteHand.length = 0.9f;
             minuteHand.width = 0.04f;
+            minuteHand.shadowRadius = 5f;
 
             hourHand = new WatchHand(mainDial);
             hourHand.color = mHourHandColor;
@@ -861,6 +930,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             hourHand.hasArrowHead = true;
             hourHand.length = 0.9f * 0.7f;
             hourHand.width = 0.04f;
+            hourHand.shadowRadius = 4f;
 
             batteryHand = new WatchHand(subDial4);
             batteryHand.color = mSecondHandColor;
@@ -868,6 +938,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             batteryHand.hasArrowHead = true;
             batteryHand.length = 0.9f;
             batteryHand.width = 0.02f;
+            batteryHand.shadowRadius = 2f;
 
             clearIdle();
             updateDials();
@@ -888,11 +959,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             hourHand.update();
             minuteHand.update();
             secondHand.update();
-            chronographSecondFractionHand.update();
-            chronographSecondHand.update();
-            chronographMinuteHand.update();
-            chronographHourHand.update();
             batteryHand.update();
+            chronographHourHand.update();
+            chronographMinuteHand.update();
+            chronographSecondHand.update();
+            chronographSecondFractionHand.update();
         }
 
         private void setUpdateRate() {
