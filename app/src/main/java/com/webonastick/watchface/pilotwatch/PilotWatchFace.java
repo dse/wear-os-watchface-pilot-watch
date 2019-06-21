@@ -137,31 +137,31 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private class WatchDial {
             public WeakReference<Engine> engineWeakReference;
 
-            public float radius = 0.5f;
-            public float centerX = 0.0f;
-            public float centerY = 0.0f;
+            public float radiusHalfVmin = 0.5f;
+            public float centerXVmin = 0.0f;
+            public float centerYVmin = 0.0f;
             public int ticks1 = 12;
             public int ticks2 = 60;
             public int ticks3 = 0;
-            public float tickOuter = 1.0f;
-            public float tickInner1 = 0.80f;
-            public float tickInner2 = 0.86f;
-            public float tickInner3 = 0.92f;
-            public float tickStrokeWidth1 = 0.01f;
-            public float tickStrokeWidth2 = 0.01f;
-            public float tickStrokeWidth3 = 0.01f;
+            public float outerTicksDiameterVmin = 1.0f;
+            public float innerTicks1DiameterVmin = 0.80f;
+            public float innerTicks2DiameterVmin = 0.86f;
+            public float innerTicks3DiameterVmin = 0.92f;
+            public float ticksStrokeWidth1Vmin = 0.01f;
+            public float ticksStrokeWidth2Vmin = 0.01f;
+            public float ticksStrokeWidth3Vmin = 0.01f;
             public boolean nonAmbientOnly = true;
             public float startAngle = 0f;
             public float endAngle = 360f;
             public float excludeTicksFrom = 0f;
             public float excludeTicksTo = 0f;
 
-            public float circle1 = 0f;
-            public float circle2 = 0f;
-            public float circleStrokeWidth = 0f;
+            public float circle1DiameterVmin = 0f;
+            public float circle2DiameterVmin = 0f;
+            public float circleStrokeWidthVmin = 0f;
 
             public ArrayList<Pair<Float, String>> textPairs = new ArrayList<Pair<Float, String>>();
-            public float textSize = 0.05f;
+            public float textSizeVmin = 0.05f;
 
             public float darkOpacity = 0f;
 
@@ -182,8 +182,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             private float pixelBottomBoundary;
 
             private int shadowColor = Color.BLACK;
-            private float shadowDX = 0;
-            private float shadowDY = 1;
+            private float shadowDXPx = 0;
+            private float shadowDYPx = 1;
 
             public void addText(float rotation, String text) {
                 textPairs.add(new Pair<>(rotation, text));
@@ -200,26 +200,26 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public void update() {
                 Engine engine = engineWeakReference.get();
-                pixelRadius = radius * engine.mRadiusPx;
-                pixelCenterX = engine.mCenterXPx + centerX * engine.mDiameterPx;
-                pixelCenterY = engine.mCenterYPx + centerY * engine.mDiameterPx;
-                pixelTickOuter = pixelRadius * tickOuter;
-                pixelTickInner1 = pixelRadius * tickInner1;
-                pixelTickInner2 = pixelRadius * tickInner2;
-                pixelTickInner3 = pixelRadius * tickInner3;
-                pixelTickStrokeWidth1 = engine.mDiameterPx * tickStrokeWidth1;
-                pixelTickStrokeWidth2 = engine.mDiameterPx * tickStrokeWidth2;
-                pixelTickStrokeWidth3 = engine.mDiameterPx * tickStrokeWidth3;
+                pixelRadius = radiusHalfVmin * engine.mRadiusPx;
+                pixelCenterX = engine.mCenterXPx + centerXVmin * engine.mDiameterPx;
+                pixelCenterY = engine.mCenterYPx + centerYVmin * engine.mDiameterPx;
+                pixelTickOuter = pixelRadius * outerTicksDiameterVmin;
+                pixelTickInner1 = pixelRadius * innerTicks1DiameterVmin;
+                pixelTickInner2 = pixelRadius * innerTicks2DiameterVmin;
+                pixelTickInner3 = pixelRadius * innerTicks3DiameterVmin;
+                pixelTickStrokeWidth1 = engine.mDiameterPx * ticksStrokeWidth1Vmin;
+                pixelTickStrokeWidth2 = engine.mDiameterPx * ticksStrokeWidth2Vmin;
+                pixelTickStrokeWidth3 = engine.mDiameterPx * ticksStrokeWidth3Vmin;
                 updateBoundaries();
             }
 
             private void updateBoundaries() {
                 Engine engine = engineWeakReference.get();
                 if (startAngle == 0f && endAngle == 360f) {
-                    pixelLeftBoundary = pixelCenterX - pixelRadius * tickOuter;
-                    pixelRightBoundary = pixelCenterX + pixelRadius * tickOuter;
-                    pixelTopBoundary = pixelCenterY - pixelRadius * tickOuter;
-                    pixelBottomBoundary = pixelCenterY + pixelRadius * tickOuter;
+                    pixelLeftBoundary = pixelCenterX - pixelRadius * outerTicksDiameterVmin;
+                    pixelRightBoundary = pixelCenterX + pixelRadius * outerTicksDiameterVmin;
+                    pixelTopBoundary = pixelCenterY - pixelRadius * outerTicksDiameterVmin;
+                    pixelBottomBoundary = pixelCenterY + pixelRadius * outerTicksDiameterVmin;
                 } else {
                     pixelLeftBoundary = pixelCenterX;
                     pixelRightBoundary = pixelCenterX;
@@ -266,7 +266,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
 
                 drawOpaqueLayer(canvas, ambient);
-                if (!ambient && shadowColor != 0 && (shadowDX != 0 || shadowDY != 0)) {
+                if (!ambient && shadowColor != 0 && (shadowDXPx != 0 || shadowDYPx != 0)) {
                     drawTicks(canvas, ambient, true);
                     drawCircles(canvas, ambient, true);
                     drawText(canvas, ambient, true);
@@ -296,13 +296,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             public void drawTicks(Canvas canvas, Boolean ambient, Boolean isShadow) {
-                if (isShadow && (ambient || (shadowDX == 0 && shadowDY == 0))) {
+                if (isShadow && (ambient || (shadowDXPx == 0 && shadowDYPx == 0))) {
                     return;
                 }
                 Engine engine = engineWeakReference.get();
 
-                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDX : 0);
-                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDY : 0);
+                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDXPx : 0);
+                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDYPx : 0);
 
                 Paint paint = new Paint();
                 paint.setAntiAlias(true);
@@ -390,17 +390,17 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public float getCircleStrokeWidth() {
                 Engine engine = engineWeakReference.get();
-                if (circleStrokeWidth != 0f) {
-                    return circleStrokeWidth * engine.mDiameterPx;
+                if (circleStrokeWidthVmin != 0f) {
+                    return circleStrokeWidthVmin * engine.mDiameterPx;
                 }
-                if (tickStrokeWidth3 != 0f) {
-                    return tickStrokeWidth3 * engine.mDiameterPx;
+                if (ticksStrokeWidth3Vmin != 0f) {
+                    return ticksStrokeWidth3Vmin * engine.mDiameterPx;
                 }
-                if (tickStrokeWidth2 != 0f) {
-                    return tickStrokeWidth2 * engine.mDiameterPx;
+                if (ticksStrokeWidth2Vmin != 0f) {
+                    return ticksStrokeWidth2Vmin * engine.mDiameterPx;
                 }
-                if (tickStrokeWidth1 != 0f) {
-                    return tickStrokeWidth1 * engine.mDiameterPx;
+                if (ticksStrokeWidth1Vmin != 0f) {
+                    return ticksStrokeWidth1Vmin * engine.mDiameterPx;
                 }
                 return 0f;
             }
@@ -410,7 +410,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             public void drawCircles(Canvas canvas, Boolean ambient, Boolean isShadow) {
-                if (isShadow && (ambient || (shadowDX == 0 && shadowDY == 0))) {
+                if (isShadow && (ambient || (shadowDXPx == 0 && shadowDYPx == 0))) {
                     return;
                 }
 
@@ -436,11 +436,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 paint.setStrokeCap(Paint.Cap.BUTT);
                 paint.setStrokeWidth(strokeWidth);
 
-                if (circle1 != 0f) {
-                    drawArc(canvas, circle1, paint, isShadow);
+                if (circle1DiameterVmin != 0f) {
+                    drawArc(canvas, circle1DiameterVmin, paint, isShadow);
                 }
-                if (circle2 != 0f) {
-                    drawArc(canvas, circle2, paint, isShadow);
+                if (circle2DiameterVmin != 0f) {
+                    drawArc(canvas, circle2DiameterVmin, paint, isShadow);
                 }
             }
 
@@ -449,14 +449,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             public void drawText(Canvas canvas, Boolean ambient, Boolean isShadow) {
-                if (isShadow && (ambient || (shadowDX == 0 && shadowDY == 0))) {
+                if (isShadow && (ambient || (shadowDXPx == 0 && shadowDYPx == 0))) {
                     return;
                 }
 
                 Engine engine = engineWeakReference.get();
 
-                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDX : 0);
-                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDY : 0);
+                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDXPx : 0);
+                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDYPx : 0);
 
                 Paint textPaint = new Paint();
                 textPaint.setTypeface(mTypeface);
@@ -465,7 +465,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 } else {
                     textPaint.setColor(Color.WHITE);
                 }
-                textPaint.setTextSize(engine.mDiameterPx * textSize);
+                textPaint.setTextSize(engine.mDiameterPx * textSizeVmin);
                 textPaint.setAntiAlias(true);
                 textPaint.setTextAlign(Paint.Align.CENTER);
                 textPaint.setStyle(Paint.Style.FILL);
@@ -485,7 +485,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
 
-            public void drawArc(Canvas canvas, float radius, Paint paint, Boolean isShadow) {
+            public void drawArc(Canvas canvas, float radiusHalfVmin, Paint paint, Boolean isShadow) {
                 float startAngle = this.startAngle;
                 float endAngle = this.endAngle;
                 if (startAngle > endAngle) {
@@ -493,28 +493,28 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     endAngle = this.startAngle;
                 }
 
-                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDX : 0);
-                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDY : 0);
+                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDXPx : 0);
+                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDYPx : 0);
 
                 if (excludeTicksFrom == 0f && excludeTicksTo == 0f) {
                     canvas.drawArc(
-                            pixelCenterX - radius * pixelRadius, pixelCenterY - radius * pixelRadius,
-                            pixelCenterX + radius * pixelRadius, pixelCenterY + radius * pixelRadius,
+                            pixelCenterX - radiusHalfVmin * pixelRadius, pixelCenterY - radiusHalfVmin * pixelRadius,
+                            pixelCenterX + radiusHalfVmin * pixelRadius, pixelCenterY + radiusHalfVmin * pixelRadius,
                             startAngle - 90f,
                             endAngle - startAngle,
                             false, paint
                     );
                 } else {
                     canvas.drawArc(
-                            pixelCenterX - radius * pixelRadius, pixelCenterY - radius * pixelRadius,
-                            pixelCenterX + radius * pixelRadius, pixelCenterY + radius * pixelRadius,
+                            pixelCenterX - radiusHalfVmin * pixelRadius, pixelCenterY - radiusHalfVmin * pixelRadius,
+                            pixelCenterX + radiusHalfVmin * pixelRadius, pixelCenterY + radiusHalfVmin * pixelRadius,
                             startAngle - 90f,
                             (endAngle - startAngle) * excludeTicksFrom,
                             false, paint
                     );
                     canvas.drawArc(
-                            pixelCenterX - radius * pixelRadius, pixelCenterY - radius * pixelRadius,
-                            pixelCenterX + radius * pixelRadius, pixelCenterY + radius * pixelRadius,
+                            pixelCenterX - radiusHalfVmin * pixelRadius, pixelCenterY - radiusHalfVmin * pixelRadius,
+                            pixelCenterX + radiusHalfVmin * pixelRadius, pixelCenterY + radiusHalfVmin * pixelRadius,
                             startAngle - 90f + (endAngle - startAngle) * excludeTicksTo,
                             endAngle - startAngle - (endAngle - startAngle) * excludeTicksTo,
                             false, paint
@@ -762,39 +762,39 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mTickColor = ContextCompat.getColor(getApplicationContext(), R.color.tick_color);
 
             mMainDial = new WatchDial(this);
-            mMainDial.radius = 1f;
-            mMainDial.centerX = 0.0f;
-            mMainDial.centerY = 0.0f;
+            mMainDial.radiusHalfVmin = 1f;
+            mMainDial.centerXVmin = 0.0f;
+            mMainDial.centerYVmin = 0.0f;
             mMainDial.ticks1 = 12;
             mMainDial.ticks2 = 60;
             mMainDial.ticks3 = 300;
-            mMainDial.tickOuter = 0.99f;
-            mMainDial.tickInner1 = 0.90f;
-            mMainDial.tickInner2 = 0.93f;
-            mMainDial.tickInner3 = 0.96f;
-            mMainDial.tickStrokeWidth1 = 0.01f;
-            mMainDial.tickStrokeWidth2 = 0.005f;
-            mMainDial.tickStrokeWidth3 = 0.0025f;
+            mMainDial.outerTicksDiameterVmin = 0.99f;
+            mMainDial.innerTicks1DiameterVmin = 0.90f;
+            mMainDial.innerTicks2DiameterVmin = 0.93f;
+            mMainDial.innerTicks3DiameterVmin = 0.96f;
+            mMainDial.ticksStrokeWidth1Vmin = 0.01f;
+            mMainDial.ticksStrokeWidth2Vmin = 0.005f;
+            mMainDial.ticksStrokeWidth3Vmin = 0.0025f;
             mMainDial.nonAmbientOnly = false;
-            mMainDial.circle1 = 0.99f;
-            mMainDial.circle2 = 0.96f;
-            mMainDial.circleStrokeWidth = 0.0025f;
+            mMainDial.circle1DiameterVmin = 0.99f;
+            mMainDial.circle2DiameterVmin = 0.96f;
+            mMainDial.circleStrokeWidthVmin = 0.0025f;
 
             mSubDial1 = new WatchDial(this);
-            mSubDial1.radius = 0.3f;
-            mSubDial1.centerX = 0f;
-            mSubDial1.centerY = -0.25f;
+            mSubDial1.radiusHalfVmin = 0.3f;
+            mSubDial1.centerXVmin = 0f;
+            mSubDial1.centerYVmin = -0.25f;
             mSubDial1.ticks1 = 10;
             mSubDial1.ticks2 = 50;
-            mSubDial1.tickOuter = 1f;
-            mSubDial1.tickInner1 = 0.80f;
-            mSubDial1.tickInner2 = 0.90f;
-            mSubDial1.tickStrokeWidth1 = 0.005f;
-            mSubDial1.tickStrokeWidth2 = 0.0025f;
+            mSubDial1.outerTicksDiameterVmin = 1f;
+            mSubDial1.innerTicks1DiameterVmin = 0.80f;
+            mSubDial1.innerTicks2DiameterVmin = 0.90f;
+            mSubDial1.ticksStrokeWidth1Vmin = 0.005f;
+            mSubDial1.ticksStrokeWidth2Vmin = 0.0025f;
             mSubDial1.nonAmbientOnly = true;
-            mSubDial1.circle1 = 1f;
-            mSubDial1.circle2 = 0.90f;
-            mSubDial1.circleStrokeWidth = 0.0025f;
+            mSubDial1.circle1DiameterVmin = 1f;
+            mSubDial1.circle2DiameterVmin = 0.90f;
+            mSubDial1.circleStrokeWidthVmin = 0.0025f;
             mSubDial1.darkOpacity = 0.2f;
             mSubDial1.addText(0.0f, "0");
             mSubDial1.addText(0.2f, "2");
@@ -803,20 +803,20 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial1.addText(0.8f, "8");
 
             mSubDial2 = new WatchDial(this);
-            mSubDial2.radius = 0.3f;
-            mSubDial2.centerX = -0.25f;
-            mSubDial2.centerY = 0f;
+            mSubDial2.radiusHalfVmin = 0.3f;
+            mSubDial2.centerXVmin = -0.25f;
+            mSubDial2.centerYVmin = 0f;
             mSubDial2.ticks1 = 12;
             mSubDial2.ticks2 = 60;
-            mSubDial2.tickOuter = 1f;
-            mSubDial2.tickInner1 = 0.80f;
-            mSubDial2.tickInner2 = 0.90f;
-            mSubDial2.tickStrokeWidth1 = 0.005f;
-            mSubDial2.tickStrokeWidth2 = 0.0025f;
+            mSubDial2.outerTicksDiameterVmin = 1f;
+            mSubDial2.innerTicks1DiameterVmin = 0.80f;
+            mSubDial2.innerTicks2DiameterVmin = 0.90f;
+            mSubDial2.ticksStrokeWidth1Vmin = 0.005f;
+            mSubDial2.ticksStrokeWidth2Vmin = 0.0025f;
             mSubDial2.nonAmbientOnly = true;
-            mSubDial2.circle1 = 1f;
-            mSubDial2.circle2 = 0.9f;
-            mSubDial2.circleStrokeWidth = 0.0025f;
+            mSubDial2.circle1DiameterVmin = 1f;
+            mSubDial2.circle2DiameterVmin = 0.9f;
+            mSubDial2.circleStrokeWidthVmin = 0.0025f;
             mSubDial2.darkOpacity = 0.2f;
             mSubDial2.addText(0.00f, "12");
             mSubDial2.addText(0.25f, "3");
@@ -824,20 +824,20 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial2.addText(0.75f, "9");
 
             mSubDial3 = new WatchDial(this);
-            mSubDial3.radius = 0.3f;
-            mSubDial3.centerX = 0f;
-            mSubDial3.centerY = 0.25f;
+            mSubDial3.radiusHalfVmin = 0.3f;
+            mSubDial3.centerXVmin = 0f;
+            mSubDial3.centerYVmin = 0.25f;
             mSubDial3.ticks1 = 12;
             mSubDial3.ticks2 = 60;
-            mSubDial3.tickOuter = 1f;
-            mSubDial3.tickInner1 = 0.80f;
-            mSubDial3.tickInner2 = 0.90f;
-            mSubDial3.tickStrokeWidth1 = 0.005f;
-            mSubDial3.tickStrokeWidth2 = 0.0025f;
+            mSubDial3.outerTicksDiameterVmin = 1f;
+            mSubDial3.innerTicks1DiameterVmin = 0.80f;
+            mSubDial3.innerTicks2DiameterVmin = 0.90f;
+            mSubDial3.ticksStrokeWidth1Vmin = 0.005f;
+            mSubDial3.ticksStrokeWidth2Vmin = 0.0025f;
             mSubDial3.nonAmbientOnly = true;
-            mSubDial3.circle1 = 1f;
-            mSubDial3.circle2 = 0.9f;
-            mSubDial3.circleStrokeWidth = 0.0025f;
+            mSubDial3.circle1DiameterVmin = 1f;
+            mSubDial3.circle2DiameterVmin = 0.9f;
+            mSubDial3.circleStrokeWidthVmin = 0.0025f;
             mSubDial3.darkOpacity = 0.2f;
             mSubDial3.addText(0.00f, "60");
             mSubDial3.addText(0.25f, "15");
@@ -845,27 +845,27 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial3.addText(0.75f, "45");
 
             mSubDial4 = new WatchDial(this);
-            mSubDial4.radius = 0.5f;
-            mSubDial4.centerX = 0.125f;
-            mSubDial4.centerY = 0f;
+            mSubDial4.radiusHalfVmin = 0.5f;
+            mSubDial4.centerXVmin = 0.125f;
+            mSubDial4.centerYVmin = 0f;
             mSubDial4.ticks1 = 2;
             mSubDial4.ticks2 = 10;
             mSubDial4.ticks3 = 20;
-            mSubDial4.tickOuter = 1f;
-            mSubDial4.tickInner1 = 0.80f;
-            mSubDial4.tickInner2 = 0.86f;
-            mSubDial4.tickInner3 = 0.92f;
-            mSubDial4.tickStrokeWidth1 = 0.01f;
-            mSubDial4.tickStrokeWidth2 = 0.005f;
-            mSubDial4.tickStrokeWidth3 = 0.0025f;
+            mSubDial4.outerTicksDiameterVmin = 1f;
+            mSubDial4.innerTicks1DiameterVmin = 0.80f;
+            mSubDial4.innerTicks2DiameterVmin = 0.86f;
+            mSubDial4.innerTicks3DiameterVmin = 0.92f;
+            mSubDial4.ticksStrokeWidth1Vmin = 0.01f;
+            mSubDial4.ticksStrokeWidth2Vmin = 0.005f;
+            mSubDial4.ticksStrokeWidth3Vmin = 0.0025f;
             mSubDial4.nonAmbientOnly = false;
             mSubDial4.startAngle = 150f;
             mSubDial4.endAngle = 30f;
             mSubDial4.excludeTicksFrom = 0.4f;
             mSubDial4.excludeTicksTo = 0.6f;
-            mSubDial4.circle1 = 1f;
-            mSubDial4.circle2 = 0.92f;
-            mSubDial4.circleStrokeWidth = 0.0025f;
+            mSubDial4.circle1DiameterVmin = 1f;
+            mSubDial4.circle2DiameterVmin = 0.92f;
+            mSubDial4.circleStrokeWidthVmin = 0.0025f;
             mSubDial4.addText(0.00f, "0%");
             mSubDial4.addText(1.00f, "100%");
 
