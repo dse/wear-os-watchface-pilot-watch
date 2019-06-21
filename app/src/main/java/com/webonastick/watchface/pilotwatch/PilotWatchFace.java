@@ -229,12 +229,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     float maxAngle = Math.max(startAngle, endAngle);
                     float angle = minAngle;
                     while (true) {
-                        float pointX = pixelCenterX + pixelRadius * (float) Math.sin(angle * Math.PI / 180.0);
-                        float pointY = pixelCenterY - pixelRadius * (float) Math.cos(angle * Math.PI / 180.0);
-                        pixelLeftBoundary = Math.min(pixelLeftBoundary, pointX);
-                        pixelRightBoundary = Math.max(pixelRightBoundary, pointX);
-                        pixelTopBoundary = Math.min(pixelTopBoundary, pointY);
-                        pixelBottomBoundary = Math.max(pixelBottomBoundary, pointY);
+                        float pointXPx = pixelCenterX + pixelRadius * (float) Math.sin(angle * Math.PI / 180.0);
+                        float pointYPx = pixelCenterY - pixelRadius * (float) Math.cos(angle * Math.PI / 180.0);
+                        pixelLeftBoundary = Math.min(pixelLeftBoundary, pointXPx);
+                        pixelRightBoundary = Math.max(pixelRightBoundary, pointXPx);
+                        pixelTopBoundary = Math.min(pixelTopBoundary, pointYPx);
+                        pixelBottomBoundary = Math.max(pixelBottomBoundary, pointYPx);
                         if (angle == maxAngle) {
                             break;
                         }
@@ -326,10 +326,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     if (isExcluded(rotation)) {
                         continue;
                     }
-                    float degrees = startAngle + (endAngle - startAngle) * rotation;
+                    float angle = startAngle + (endAngle - startAngle) * rotation;
 
                     canvas.save();
-                    canvas.rotate(degrees, pixelCenterX, pixelCenterY);
+                    canvas.rotate(angle, pixelCenterX, pixelCenterY);
                     canvas.drawLine(
                             pixelCenterX, pixelCenterY - pixelTickOuter - extend,
                             pixelCenterX, pixelCenterY - pixelTickInner1 + extend,
@@ -348,10 +348,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     if (isExcluded(rotation)) {
                         continue;
                     }
-                    float degrees = startAngle + (endAngle - startAngle) * rotation;
+                    float angle = startAngle + (endAngle - startAngle) * rotation;
 
                     canvas.save();
-                    canvas.rotate(degrees, pixelCenterX, pixelCenterY);
+                    canvas.rotate(angle, pixelCenterX, pixelCenterY);
                     canvas.drawLine(
                             pixelCenterX, pixelCenterY - pixelTickOuter - extend,
                             pixelCenterX, pixelCenterY - pixelTickInner2 + extend,
@@ -374,10 +374,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                         if (isExcluded(rotation)) {
                             continue;
                         }
-                        float degrees = startAngle + (endAngle - startAngle) * rotation;
+                        float angle = startAngle + (endAngle - startAngle) * rotation;
 
                         canvas.save();
-                        canvas.rotate(degrees, pixelCenterX, pixelCenterY);
+                        canvas.rotate(angle, pixelCenterX, pixelCenterY);
                         canvas.drawLine(
                                 pixelCenterX, pixelCenterY - pixelTickOuter - extend,
                                 pixelCenterX, pixelCenterY - pixelTickInner3 + extend,
@@ -416,8 +416,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
                 Engine engine = engineWeakReference.get();
 
-                float strokeWidth = getCircleStrokeWidth();
-                if (strokeWidth == 0f) {
+                float strokeWidthPx = getCircleStrokeWidth();
+                if (strokeWidthPx == 0f) {
                     return;
                 }
 
@@ -434,7 +434,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeCap(Paint.Cap.BUTT);
-                paint.setStrokeWidth(strokeWidth);
+                paint.setStrokeWidth(strokeWidthPx);
 
                 if (circle1DiameterVmin != 0f) {
                     drawArc(canvas, circle1DiameterVmin, paint, isShadow);
@@ -701,14 +701,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 WatchDial dial = watchDialWeakReference.get();
                 Engine engine = dial.engineWeakReference.get();
 
-                float degrees = dial.startAngle + (dial.endAngle - dial.startAngle) * rotation;
+                float angle = dial.startAngle + (dial.endAngle - dial.startAngle) * rotation;
 
                 if (engine.mAmbient && (dial.nonAmbientOnly || nonAmbientOnly)) {
                     return;
                 }
 
                 canvas.save();
-                canvas.rotate(degrees, dial.pixelCenterX, dial.pixelCenterY);
+                canvas.rotate(angle, dial.pixelCenterX, dial.pixelCenterY);
                 canvas.drawPath(path, paint);
                 canvas.restore();
             }
