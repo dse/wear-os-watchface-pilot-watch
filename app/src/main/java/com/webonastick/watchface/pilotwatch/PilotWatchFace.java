@@ -150,9 +150,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float diameterVmin = 0.5f;
             public float centerXVmin = 0.0f;
             public float centerYVmin = 0.0f;
-            public int ticks1 = 12;
-            public int ticks2 = 60;
-            public int ticks3 = 0;
+            public int numTicks1 = 12;
+            public int numTicks2 = 60;
+            public int numTicks3 = 0;
             public float outerTicksDiameterVmin = 1.0f;
             public float innerTicks1DiameterVmin = 0.80f;
             public float innerTicks2DiameterVmin = 0.86f;
@@ -331,8 +331,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 float extend = getCircleStrokeWidth() / 2;
 
                 paint.setStrokeWidth(pixelTickStrokeWidth1);
-                for (int i = 0; i <= ticks1; i += 1) {
-                    float rotation = 1.0f * i / ticks1;
+                for (int i = 0; i <= numTicks1; i += 1) {
+                    float rotation = 1.0f * i / numTicks1;
                     if (isExcluded(rotation)) {
                         continue;
                     }
@@ -349,12 +349,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
 
                 paint.setStrokeWidth(pixelTickStrokeWidth2);
-                for (int i = 0; i <= ticks2; i += 1) {
-                    if ((i * ticks1) % ticks2 == 0) {
+                for (int i = 0; i <= numTicks2; i += 1) {
+                    if ((i * numTicks1) % numTicks2 == 0) {
                         continue;
                     }
 
-                    float rotation = 1.0f * i / ticks2;
+                    float rotation = 1.0f * i / numTicks2;
                     if (isExcluded(rotation)) {
                         continue;
                     }
@@ -370,17 +370,17 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     canvas.restore();
                 }
 
-                if (ticks3 != 0 && !ambient) {
+                if (numTicks3 != 0 && !ambient) {
                     paint.setStrokeWidth(pixelTickStrokeWidth3);
-                    for (int i = 0; i <= ticks3; i += 1) {
-                        if ((i * ticks2) % ticks3 == 0) {
+                    for (int i = 0; i <= numTicks3; i += 1) {
+                        if ((i * numTicks2) % numTicks3 == 0) {
                             continue;
                         }
-                        if ((i * ticks1) % ticks3 == 0) {
+                        if ((i * numTicks1) % numTicks3 == 0) {
                             continue;
                         }
 
-                        float rotation = 1.0f * i / ticks3;
+                        float rotation = 1.0f * i / numTicks3;
                         if (isExcluded(rotation)) {
                             continue;
                         }
@@ -775,9 +775,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mMainDial.diameterVmin = 1f;
             mMainDial.centerXVmin = 0.0f;
             mMainDial.centerYVmin = 0.0f;
-            mMainDial.ticks1 = 12;
-            mMainDial.ticks2 = 60;
-            mMainDial.ticks3 = 300;
+            mMainDial.numTicks1 = 12;
+            mMainDial.numTicks2 = 60;
+            mMainDial.numTicks3 = 300;
             mMainDial.outerTicksDiameterVmin = 0.99f;
             mMainDial.innerTicks1DiameterVmin = 0.90f;
             mMainDial.innerTicks2DiameterVmin = 0.93f;
@@ -794,8 +794,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial1.diameterVmin = 0.3f;
             mSubDial1.centerXVmin = 0f;
             mSubDial1.centerYVmin = -0.25f;
-            mSubDial1.ticks1 = 10;
-            mSubDial1.ticks2 = 50;
+            mSubDial1.numTicks1 = 10;
+            mSubDial1.numTicks2 = 50;
             mSubDial1.outerTicksDiameterVmin = 1f;
             mSubDial1.innerTicks1DiameterVmin = 0.80f;
             mSubDial1.innerTicks2DiameterVmin = 0.90f;
@@ -816,8 +816,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial2.diameterVmin = 0.3f;
             mSubDial2.centerXVmin = -0.25f;
             mSubDial2.centerYVmin = 0f;
-            mSubDial2.ticks1 = 12;
-            mSubDial2.ticks2 = 60;
+            mSubDial2.numTicks1 = 12;
+            mSubDial2.numTicks2 = 60;
             mSubDial2.outerTicksDiameterVmin = 1f;
             mSubDial2.innerTicks1DiameterVmin = 0.80f;
             mSubDial2.innerTicks2DiameterVmin = 0.90f;
@@ -837,8 +837,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial3.diameterVmin = 0.3f;
             mSubDial3.centerXVmin = 0f;
             mSubDial3.centerYVmin = 0.25f;
-            mSubDial3.ticks1 = 12;
-            mSubDial3.ticks2 = 60;
+            mSubDial3.numTicks1 = 12;
+            mSubDial3.numTicks2 = 60;
             mSubDial3.outerTicksDiameterVmin = 1f;
             mSubDial3.innerTicks1DiameterVmin = 0.80f;
             mSubDial3.innerTicks2DiameterVmin = 0.90f;
@@ -858,9 +858,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial4.diameterVmin = 0.5f;
             mSubDial4.centerXVmin = 0.125f;
             mSubDial4.centerYVmin = 0f;
-            mSubDial4.ticks1 = 2;
-            mSubDial4.ticks2 = 10;
-            mSubDial4.ticks3 = 20;
+            mSubDial4.numTicks1 = 2;
+            mSubDial4.numTicks2 = 10;
+            mSubDial4.numTicks3 = 20;
             mSubDial4.outerTicksDiameterVmin = 1f;
             mSubDial4.innerTicks1DiameterVmin = 0.80f;
             mSubDial4.innerTicks2DiameterVmin = 0.86f;
