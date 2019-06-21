@@ -10,6 +10,7 @@ package com.webonastick.watchface.pilotwatch;
  *   On a 300 x 400 display, 0.5 vmin = 150px for example.
  *   It's kind of like the vmin unit in CSS, except it's not a percentage, it's a percentage divided by 100.
  * - All angles are assumed to be DEGREES unless otherwise indicated.
+ * - Pct means Percentage
  */
 
 import android.content.BroadcastReceiver;
@@ -616,7 +617,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public boolean hasArrowHead = false;
             public float arrowHeadAngle = 45f;
             public float arrowHeadSize = 3f;
-            public float length = 1f;
+            public float lengthPctRadius = 1f;
             public float width = 0.01f;
             public float shroudThingyRadius = 0.03f;
             public float shroudThingyHoleRadius = 0.01f;
@@ -637,7 +638,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 WatchDial dial = watchDialWeakReference.get();
                 Engine engine = dial.engineWeakReference.get();
 
-                pixelLength = length * dial.pixelRadius;
+                pixelLength = lengthPctRadius * dial.pixelRadius;
                 pixelWidth = width * engine.mRadiusPx;
 
                 pixelShroudThingyHoleRadius = shroudThingyHoleRadius * engine.mRadiusPx;
@@ -884,14 +885,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mChronographSecondFractionHand = new WatchHand(mSubDial1);
             mChronographSecondFractionHand.color = mSecondHandColor;
             mChronographSecondFractionHand.nonAmbientOnly = true;
-            mChronographSecondFractionHand.length = 0.9f;
+            mChronographSecondFractionHand.lengthPctRadius = 0.9f;
             mChronographSecondFractionHand.width = 0.02f;
             mChronographSecondFractionHand.shadowRadiusPx = 2f;
 
             mChronographSecondHand = new WatchHand(mSubDial3);
             mChronographSecondHand.color = mSecondHandColor;
             mChronographSecondHand.nonAmbientOnly = true;
-            mChronographSecondHand.length = 0.9f;
+            mChronographSecondHand.lengthPctRadius = 0.9f;
             mChronographSecondHand.width = 0.02f;
             mChronographSecondHand.shadowRadiusPx = 2f;
 
@@ -899,7 +900,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mChronographMinuteHand.color = mMinuteHandColor;
             mChronographMinuteHand.nonAmbientOnly = true;
             mChronographMinuteHand.hasArrowHead = true;
-            mChronographMinuteHand.length = 0.8f;
+            mChronographMinuteHand.lengthPctRadius = 0.8f;
             mChronographMinuteHand.width = 0.02f;
             mChronographMinuteHand.shadowRadiusPx = 3f;
 
@@ -907,14 +908,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mChronographHourHand.color = mHourHandColor;
             mChronographHourHand.nonAmbientOnly = true;
             mChronographHourHand.hasArrowHead = true;
-            mChronographHourHand.length = 0.8f * 0.7f;
+            mChronographHourHand.lengthPctRadius = 0.8f * 0.7f;
             mChronographHourHand.width = 0.02f;
             mChronographHourHand.shadowRadiusPx = 2f;
 
             mSecondHand = new WatchHand(mMainDial);
             mSecondHand.color = mSecondHandColor;
             mSecondHand.nonAmbientOnly = true;
-            mSecondHand.length = 0.95f;
+            mSecondHand.lengthPctRadius = 0.95f;
             mSecondHand.width = 0.02f;
             mSecondHand.shadowRadiusPx = 6f;
 
@@ -922,7 +923,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mMinuteHand.color = mMinuteHandColor;
             mMinuteHand.nonAmbientOnly = false;
             mMinuteHand.hasArrowHead = true;
-            mMinuteHand.length = 0.9f;
+            mMinuteHand.lengthPctRadius = 0.9f;
             mMinuteHand.width = 0.04f;
             mMinuteHand.shadowRadiusPx = 5f;
 
@@ -930,7 +931,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mHourHand.color = mHourHandColor;
             mHourHand.nonAmbientOnly = false;
             mHourHand.hasArrowHead = true;
-            mHourHand.length = 0.9f * 0.7f;
+            mHourHand.lengthPctRadius = 0.9f * 0.7f;
             mHourHand.width = 0.04f;
             mHourHand.shadowRadiusPx = 4f;
 
@@ -938,7 +939,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mBatteryHand.color = mSecondHandColor;
             mBatteryHand.nonAmbientOnly = false;
             mBatteryHand.hasArrowHead = true;
-            mBatteryHand.length = 0.9f;
+            mBatteryHand.lengthPctRadius = 0.9f;
             mBatteryHand.width = 0.02f;
             mBatteryHand.shadowRadiusPx = 2f;
 
