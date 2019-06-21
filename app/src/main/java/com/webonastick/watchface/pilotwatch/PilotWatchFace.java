@@ -169,8 +169,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float excludeTicksFrom = 0f;
             public float excludeTicksTo = 0f;
 
-            public float circle1DiameterVmin = 0f;
-            public float circle2DiameterVmin = 0f;
+            public float circle1Diameter = 0f;
+            public float circle2Diameter = 0f;
             public float circleStrokeWidthVmin = 0f;
 
             public ArrayList<Pair<Float, String>> textPairs = new ArrayList<Pair<Float, String>>();
@@ -449,11 +449,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 paint.setStrokeCap(Paint.Cap.BUTT);
                 paint.setStrokeWidth(strokeWidthPx);
 
-                if (circle1DiameterVmin != 0f) {
-                    drawArc(canvas, circle1DiameterVmin, paint, isShadow);
+                if (circle1Diameter != 0f) {
+                    drawArc(canvas, circle1Diameter, paint, isShadow);
                 }
-                if (circle2DiameterVmin != 0f) {
-                    drawArc(canvas, circle2DiameterVmin, paint, isShadow);
+                if (circle2Diameter != 0f) {
+                    drawArc(canvas, circle2Diameter, paint, isShadow);
                 }
             }
 
@@ -789,8 +789,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mMainDial.ticks2StrokeWidthVmin = 0.005f;
             mMainDial.ticks3StrokeWidthVmin = 0.0025f;
             mMainDial.nonAmbientOnly = false;
-            mMainDial.circle1DiameterVmin = 0.99f;
-            mMainDial.circle2DiameterVmin = 0.96f;
+            mMainDial.circle1Diameter = 0.99f;
+            mMainDial.circle2Diameter = 0.96f;
             mMainDial.circleStrokeWidthVmin = 0.0025f;
 
             mSubDial1 = new WatchDial(this);
@@ -805,8 +805,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial1.ticks1StrokeWidthVmin = 0.005f;
             mSubDial1.ticks2StrokeWidthVmin = 0.0025f;
             mSubDial1.nonAmbientOnly = true;
-            mSubDial1.circle1DiameterVmin = 1f;
-            mSubDial1.circle2DiameterVmin = 0.90f;
+            mSubDial1.circle1Diameter = 1f;
+            mSubDial1.circle2Diameter = 0.90f;
             mSubDial1.circleStrokeWidthVmin = 0.0025f;
             mSubDial1.darkOpacity = 0.2f;
             mSubDial1.addText(0.0f, "0");
@@ -827,8 +827,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial2.ticks1StrokeWidthVmin = 0.005f;
             mSubDial2.ticks2StrokeWidthVmin = 0.0025f;
             mSubDial2.nonAmbientOnly = true;
-            mSubDial2.circle1DiameterVmin = 1f;
-            mSubDial2.circle2DiameterVmin = 0.9f;
+            mSubDial2.circle1Diameter = 1f;
+            mSubDial2.circle2Diameter = 0.9f;
             mSubDial2.circleStrokeWidthVmin = 0.0025f;
             mSubDial2.darkOpacity = 0.2f;
             mSubDial2.addText(0.00f, "12");
@@ -848,8 +848,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial3.ticks1StrokeWidthVmin = 0.005f;
             mSubDial3.ticks2StrokeWidthVmin = 0.0025f;
             mSubDial3.nonAmbientOnly = true;
-            mSubDial3.circle1DiameterVmin = 1f;
-            mSubDial3.circle2DiameterVmin = 0.9f;
+            mSubDial3.circle1Diameter = 1f;
+            mSubDial3.circle2Diameter = 0.9f;
             mSubDial3.circleStrokeWidthVmin = 0.0025f;
             mSubDial3.darkOpacity = 0.2f;
             mSubDial3.addText(0.00f, "60");
@@ -876,8 +876,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial4.endAngle = 30f;
             mSubDial4.excludeTicksFrom = 0.4f;
             mSubDial4.excludeTicksTo = 0.6f;
-            mSubDial4.circle1DiameterVmin = 1f;
-            mSubDial4.circle2DiameterVmin = 0.92f;
+            mSubDial4.circle1Diameter = 1f;
+            mSubDial4.circle2Diameter = 0.92f;
             mSubDial4.circleStrokeWidthVmin = 0.0025f;
             mSubDial4.addText(0.00f, "0%");
             mSubDial4.addText(1.00f, "100%");
