@@ -1102,6 +1102,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial4.draw(backgroundCanvas, true);
         }
 
+        // TODO: rename these.  Put these where the other variables are.
+
         private final float DAY_DATE_TEXT_SIZE = 0.0625f;
         private final float DAY_DATE_OUTER = 0.87f;
 
