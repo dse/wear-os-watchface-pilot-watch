@@ -116,12 +116,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private int mSecondHandColor;
         private int mTickColor;
 
-        private float mRadius;
-        private float mDiameter;
-        private float mCenterX;
-        private float mCenterY;
-        private int mWidth;
-        private int mHeight;
+        private float mRadiusPx;
+        private float mDiameterPx;
+        private float mCenterXPx;
+        private float mCenterYPx;
+        private int mWidthPx;
+        private int mHeightPx;
 
         private Bitmap mBackgroundBitmap;
         private Bitmap mBackgroundBitmapZoomSubDial4;
@@ -200,16 +200,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public void update() {
                 Engine engine = engineWeakReference.get();
-                pixelRadius = radius * engine.mRadius;
-                pixelCenterX = engine.mCenterX + centerX * engine.mDiameter;
-                pixelCenterY = engine.mCenterY + centerY * engine.mDiameter;
+                pixelRadius = radius * engine.mRadiusPx;
+                pixelCenterX = engine.mCenterXPx + centerX * engine.mDiameterPx;
+                pixelCenterY = engine.mCenterYPx + centerY * engine.mDiameterPx;
                 pixelTickOuter = pixelRadius * tickOuter;
                 pixelTickInner1 = pixelRadius * tickInner1;
                 pixelTickInner2 = pixelRadius * tickInner2;
                 pixelTickInner3 = pixelRadius * tickInner3;
-                pixelTickStrokeWidth1 = engine.mDiameter * tickStrokeWidth1;
-                pixelTickStrokeWidth2 = engine.mDiameter * tickStrokeWidth2;
-                pixelTickStrokeWidth3 = engine.mDiameter * tickStrokeWidth3;
+                pixelTickStrokeWidth1 = engine.mDiameterPx * tickStrokeWidth1;
+                pixelTickStrokeWidth2 = engine.mDiameterPx * tickStrokeWidth2;
+                pixelTickStrokeWidth3 = engine.mDiameterPx * tickStrokeWidth3;
                 updateBoundaries();
             }
 
@@ -245,7 +245,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
 
                 /* add fudge factor */
-                float fudge = engine.mDiameter * 0.02f;
+                float fudge = engine.mDiameterPx * 0.02f;
                 pixelLeftBoundary -= fudge;
                 pixelRightBoundary += fudge;
                 pixelTopBoundary -= fudge;
@@ -253,9 +253,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
                 /* don't put boundaries past the boundaries of the canvas */
                 pixelLeftBoundary = Math.max(pixelLeftBoundary, 0);
-                pixelRightBoundary = Math.min(pixelRightBoundary, engine.mWidth);
+                pixelRightBoundary = Math.min(pixelRightBoundary, engine.mWidthPx);
                 pixelTopBoundary = Math.max(pixelTopBoundary, 0);
-                pixelBottomBoundary = Math.min(pixelBottomBoundary, engine.mHeight);
+                pixelBottomBoundary = Math.min(pixelBottomBoundary, engine.mHeightPx);
             }
 
             public void draw(Canvas canvas, Boolean ambient) {
@@ -391,16 +391,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float getCircleStrokeWidth() {
                 Engine engine = engineWeakReference.get();
                 if (circleStrokeWidth != 0f) {
-                    return circleStrokeWidth * engine.mDiameter;
+                    return circleStrokeWidth * engine.mDiameterPx;
                 }
                 if (tickStrokeWidth3 != 0f) {
-                    return tickStrokeWidth3 * engine.mDiameter;
+                    return tickStrokeWidth3 * engine.mDiameterPx;
                 }
                 if (tickStrokeWidth2 != 0f) {
-                    return tickStrokeWidth2 * engine.mDiameter;
+                    return tickStrokeWidth2 * engine.mDiameterPx;
                 }
                 if (tickStrokeWidth1 != 0f) {
-                    return tickStrokeWidth1 * engine.mDiameter;
+                    return tickStrokeWidth1 * engine.mDiameterPx;
                 }
                 return 0f;
             }
@@ -465,7 +465,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 } else {
                     textPaint.setColor(Color.WHITE);
                 }
-                textPaint.setTextSize(engine.mDiameter * textSize);
+                textPaint.setTextSize(engine.mDiameterPx * textSize);
                 textPaint.setAntiAlias(true);
                 textPaint.setTextAlign(Paint.Align.CENTER);
                 textPaint.setStyle(Paint.Style.FILL);
@@ -564,8 +564,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 float dx = newCenterX - pixelCenterX;
                 float dy = newCenterY - pixelCenterY;
                 float scale = Math.min(
-                        engine.mWidth / (pixelRightBoundary - pixelLeftBoundary),
-                        engine.mHeight / (pixelBottomBoundary - pixelTopBoundary)
+                        engine.mWidthPx / (pixelRightBoundary - pixelLeftBoundary),
+                        engine.mHeightPx / (pixelBottomBoundary - pixelTopBoundary)
                 );
                 canvas.scale(scale, scale, newCenterX, newCenterY);
                 canvas.translate(-dx, -dy);
@@ -584,12 +584,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             y2 = Math.min(y2 + fudge, canvas.getHeight());
             float centerX = (x1 + x2) / 2f;
             float centerY = (y1 + y2) / 2f;
-            float dx = centerX - mCenterX;
-            float dy = centerY - mCenterY;
-            float scaleX = mWidth / (x2 - x1);
-            float scaleY = mHeight / (y2 - y1);
+            float dx = centerX - mCenterXPx;
+            float dy = centerY - mCenterYPx;
+            float scaleX = mWidthPx / (x2 - x1);
+            float scaleY = mHeightPx / (y2 - y1);
             float scale = Math.min(scaleX, scaleY);
-            canvas.scale(scale, scale, mCenterX, mCenterY);
+            canvas.scale(scale, scale, mCenterXPx, mCenterYPx);
             canvas.translate(-dx, -dy);
         }
 
@@ -626,10 +626,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 Engine engine = dial.engineWeakReference.get();
 
                 pixelLength = length * dial.pixelRadius;
-                pixelWidth = width * engine.mRadius;
+                pixelWidth = width * engine.mRadiusPx;
 
-                pixelShroudThingyHoleRadius = shroudThingyHoleRadius * engine.mRadius;
-                pixelShroudThingyRadius = shroudThingyRadius * engine.mRadius;
+                pixelShroudThingyHoleRadius = shroudThingyHoleRadius * engine.mRadiusPx;
+                pixelShroudThingyRadius = shroudThingyRadius * engine.mRadiusPx;
                 if (pixelShroudThingyRadius < pixelWidth) {
                     pixelShroudThingyRadius = pixelWidth;
                 }
@@ -1029,16 +1029,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             mZoomOnSubDial4 = false;
 
-            mDiameter = Math.min(width, height);
-            mRadius = mDiameter / 2f;
-            mCenterX = width / 2f;
-            mCenterY = height / 2f;
-            mWidth = width;
-            mHeight = height;
+            mDiameterPx = Math.min(width, height);
+            mRadiusPx = mDiameterPx / 2f;
+            mCenterXPx = width / 2f;
+            mCenterYPx = height / 2f;
+            mWidthPx = width;
+            mHeightPx = height;
 
             mDayDateTextPaint = new Paint();
             mDayDateTextPaint.setAntiAlias(true);
-            mDayDateTextPaint.setTextSize(mDiameter * DAY_DATE_TEXT_SIZE);
+            mDayDateTextPaint.setTextSize(mDiameterPx * DAY_DATE_TEXT_SIZE);
             mDayDateTextPaint.setColor(Color.BLACK);
             mDayDateTextPaint.setTypeface(mTypeface);
             mDayDateTextPaint.setTextAlign(Paint.Align.CENTER);
@@ -1056,7 +1056,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void initBackgroundBitmap() {
-            mBackgroundBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+            mBackgroundBitmap = Bitmap.createBitmap(mWidthPx, mHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmap);
             drawClockDial(backgroundCanvas, false);
             mMainDial.draw(backgroundCanvas, false);
@@ -1067,7 +1067,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void initBackgroundBitmapZoomSubDial4() {
-            mBackgroundBitmapZoomSubDial4 = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+            mBackgroundBitmapZoomSubDial4 = Bitmap.createBitmap(mWidthPx, mHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoomSubDial4);
             zoomCanvas(backgroundCanvas, mDayDateLeft, mDayDateRight, mDayDateTop, mDayDateBottom);
             drawClockDial(backgroundCanvas, false);
@@ -1079,7 +1079,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void initAmbientBackgroundBitmap() {
-            mAmbientBackgroundBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+            mAmbientBackgroundBitmap = Bitmap.createBitmap(mWidthPx, mHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mAmbientBackgroundBitmap);
             drawClockDial(backgroundCanvas, true);
             mMainDial.draw(backgroundCanvas, true);
@@ -1126,21 +1126,21 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 maxDateWidth = Math.max(maxDateWidth, bounds.width());
             }
 
-            mDayDateTextSize = mDiameter * DAY_DATE_TEXT_SIZE;
+            mDayDateTextSize = mDiameterPx * DAY_DATE_TEXT_SIZE;
 
             /* 1 to 31, outer */
-            float dateWindowRightX = mCenterX + mRadius * DAY_DATE_OUTER;
-            float dateWindowLeftX = dateWindowRightX - maxDateWidth - mDiameter * 0.02f;
+            float dateWindowRightX = mCenterXPx + mRadiusPx * DAY_DATE_OUTER;
+            float dateWindowLeftX = dateWindowRightX - maxDateWidth - mDiameterPx * 0.02f;
 
             /* SUN to SAY, inner */
-            float dayWindowRightX = dateWindowLeftX - mDiameter * 0.01f;
-            float dayWindowLeftX = dayWindowRightX - maxDayWidth - mDiameter * 0.02f;
+            float dayWindowRightX = dateWindowLeftX - mDiameterPx * 0.01f;
+            float dayWindowLeftX = dayWindowRightX - maxDayWidth - mDiameterPx * 0.02f;
 
             mDayWindowCenterX = (dayWindowLeftX + dayWindowRightX) / 2f;
             mDateWindowCenterX = (dateWindowLeftX + dateWindowRightX) / 2f;
 
-            mDayDateTop = mCenterY - mDayDateTextSize * 0.6f;
-            mDayDateBottom = mCenterY + mDayDateTextSize * 0.6f;
+            mDayDateTop = mCenterYPx - mDayDateTextSize * 0.6f;
+            mDayDateBottom = mCenterYPx + mDayDateTextSize * 0.6f;
             mDayDateLeft = dayWindowLeftX;
             mDayDateRight = dateWindowRightX;
 
@@ -1266,8 +1266,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Rect dateBounds = new Rect();
             mDayDateTextPaint.getTextBounds(dateText, 0, dateText.length(), dateBounds);
 
-            canvas.drawText(dayText, mDayWindowCenterX, mCenterY + dayBounds.height() / 2, mDayDateTextPaint);
-            canvas.drawText(dateText, mDateWindowCenterX, mCenterY + dateBounds.height() / 2, mDayDateTextPaint);
+            canvas.drawText(dayText, mDayWindowCenterX, mCenterYPx + dayBounds.height() / 2, mDayDateTextPaint);
+            canvas.drawText(dateText, mDateWindowCenterX, mCenterYPx + dateBounds.height() / 2, mDayDateTextPaint);
         }
 
         private void drawWatchFace(Canvas canvas) {
