@@ -1,5 +1,15 @@
 package com.webonastick.watchface.pilotwatch;
 
+/**
+ * Pilot Watch watchface for Android Wear / Wear OS.
+ *
+ * Notes about variable names:
+ * - A lot of them end with units.
+ * - Px is pixels.
+ * - Vmin is the unit of a multiple of the minimum of the viewport's width or height.
+ *   On a 300 x 400 display, 0.5 vmin = 150px for example.
+ */
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -137,7 +147,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private class WatchDial {
             public WeakReference<Engine> engineWeakReference;
 
-            public float radiusHalfVmin = 0.5f;
+            public float diameterVmin = 0.5f;
             public float centerXVmin = 0.0f;
             public float centerYVmin = 0.0f;
             public int ticks1 = 12;
@@ -200,7 +210,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public void update() {
                 Engine engine = engineWeakReference.get();
-                pixelRadius = radiusHalfVmin * engine.mRadiusPx;
+                pixelRadius = diameterVmin * engine.mRadiusPx;
                 pixelCenterX = engine.mCenterXPx + centerXVmin * engine.mDiameterPx;
                 pixelCenterY = engine.mCenterYPx + centerYVmin * engine.mDiameterPx;
                 pixelTickOuter = pixelRadius * outerTicksDiameterVmin;
@@ -485,7 +495,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
 
-            public void drawArc(Canvas canvas, float radiusHalfVmin, Paint paint, Boolean isShadow) {
+            public void drawArc(Canvas canvas, float diameterVmin, Paint paint, Boolean isShadow) {
                 float startAngle = this.startAngle;
                 float endAngle = this.endAngle;
                 if (startAngle > endAngle) {
@@ -498,23 +508,23 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
                 if (excludeTicksFrom == 0f && excludeTicksTo == 0f) {
                     canvas.drawArc(
-                            pixelCenterX - radiusHalfVmin * pixelRadius, pixelCenterY - radiusHalfVmin * pixelRadius,
-                            pixelCenterX + radiusHalfVmin * pixelRadius, pixelCenterY + radiusHalfVmin * pixelRadius,
+                            pixelCenterX - diameterVmin * pixelRadius, pixelCenterY - diameterVmin * pixelRadius,
+                            pixelCenterX + diameterVmin * pixelRadius, pixelCenterY + diameterVmin * pixelRadius,
                             startAngle - 90f,
                             endAngle - startAngle,
                             false, paint
                     );
                 } else {
                     canvas.drawArc(
-                            pixelCenterX - radiusHalfVmin * pixelRadius, pixelCenterY - radiusHalfVmin * pixelRadius,
-                            pixelCenterX + radiusHalfVmin * pixelRadius, pixelCenterY + radiusHalfVmin * pixelRadius,
+                            pixelCenterX - diameterVmin * pixelRadius, pixelCenterY - diameterVmin * pixelRadius,
+                            pixelCenterX + diameterVmin * pixelRadius, pixelCenterY + diameterVmin * pixelRadius,
                             startAngle - 90f,
                             (endAngle - startAngle) * excludeTicksFrom,
                             false, paint
                     );
                     canvas.drawArc(
-                            pixelCenterX - radiusHalfVmin * pixelRadius, pixelCenterY - radiusHalfVmin * pixelRadius,
-                            pixelCenterX + radiusHalfVmin * pixelRadius, pixelCenterY + radiusHalfVmin * pixelRadius,
+                            pixelCenterX - diameterVmin * pixelRadius, pixelCenterY - diameterVmin * pixelRadius,
+                            pixelCenterX + diameterVmin * pixelRadius, pixelCenterY + diameterVmin * pixelRadius,
                             startAngle - 90f + (endAngle - startAngle) * excludeTicksTo,
                             endAngle - startAngle - (endAngle - startAngle) * excludeTicksTo,
                             false, paint
@@ -762,7 +772,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mTickColor = ContextCompat.getColor(getApplicationContext(), R.color.tick_color);
 
             mMainDial = new WatchDial(this);
-            mMainDial.radiusHalfVmin = 1f;
+            mMainDial.diameterVmin = 1f;
             mMainDial.centerXVmin = 0.0f;
             mMainDial.centerYVmin = 0.0f;
             mMainDial.ticks1 = 12;
@@ -781,7 +791,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mMainDial.circleStrokeWidthVmin = 0.0025f;
 
             mSubDial1 = new WatchDial(this);
-            mSubDial1.radiusHalfVmin = 0.3f;
+            mSubDial1.diameterVmin = 0.3f;
             mSubDial1.centerXVmin = 0f;
             mSubDial1.centerYVmin = -0.25f;
             mSubDial1.ticks1 = 10;
@@ -803,7 +813,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial1.addText(0.8f, "8");
 
             mSubDial2 = new WatchDial(this);
-            mSubDial2.radiusHalfVmin = 0.3f;
+            mSubDial2.diameterVmin = 0.3f;
             mSubDial2.centerXVmin = -0.25f;
             mSubDial2.centerYVmin = 0f;
             mSubDial2.ticks1 = 12;
@@ -824,7 +834,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial2.addText(0.75f, "9");
 
             mSubDial3 = new WatchDial(this);
-            mSubDial3.radiusHalfVmin = 0.3f;
+            mSubDial3.diameterVmin = 0.3f;
             mSubDial3.centerXVmin = 0f;
             mSubDial3.centerYVmin = 0.25f;
             mSubDial3.ticks1 = 12;
@@ -845,7 +855,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial3.addText(0.75f, "45");
 
             mSubDial4 = new WatchDial(this);
-            mSubDial4.radiusHalfVmin = 0.5f;
+            mSubDial4.diameterVmin = 0.5f;
             mSubDial4.centerXVmin = 0.125f;
             mSubDial4.centerYVmin = 0f;
             mSubDial4.ticks1 = 2;
