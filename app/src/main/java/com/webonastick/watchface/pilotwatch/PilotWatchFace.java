@@ -178,21 +178,21 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public float darkOpacity = 0f;
 
-            private float pixelRadius;
-            private float pixelCenterX;
-            private float pixelCenterY;
-            private float pixelTickOuter;
-            private float pixelTickInner1;
-            private float pixelTickInner2;
-            private float pixelTickInner3;
-            private float pixelTickStrokeWidth1;
-            private float pixelTickStrokeWidth2;
-            private float pixelTickStrokeWidth3;
+            private float radiusPx;
+            private float centerXPx;
+            private float centerYPx;
+            private float tickOuterPx;
+            private float tickInner1Px;
+            private float tickInner2Px;
+            private float tickInner3Px;
+            private float tickStrokeWidth1Px;
+            private float tickStrokeWidth2Px;
+            private float tickStrokeWidth3Px;
 
-            private float pixelLeftBoundary;
-            private float pixelRightBoundary;
-            private float pixelTopBoundary;
-            private float pixelBottomBoundary;
+            private float leftBoundaryPx;
+            private float rightBoundaryPx;
+            private float topBoundaryPx;
+            private float bottomBoundaryPx;
 
             private int shadowColor = Color.BLACK;
             private float shadowDXPx = 0;
@@ -213,41 +213,41 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public void update() {
                 Engine engine = engineWeakReference.get();
-                pixelRadius = diameterVmin * engine.mRadiusPx;
-                pixelCenterX = engine.mCenterXPx + centerXVmin * engine.mDiameterPx;
-                pixelCenterY = engine.mCenterYPx + centerYVmin * engine.mDiameterPx;
-                pixelTickOuter = pixelRadius * outerTicksDiameterVmin;
-                pixelTickInner1 = pixelRadius * innerTicks1DiameterVmin;
-                pixelTickInner2 = pixelRadius * innerTicks2DiameterVmin;
-                pixelTickInner3 = pixelRadius * innerTicks3DiameterVmin;
-                pixelTickStrokeWidth1 = engine.mDiameterPx * ticksStrokeWidth1Vmin;
-                pixelTickStrokeWidth2 = engine.mDiameterPx * ticksStrokeWidth2Vmin;
-                pixelTickStrokeWidth3 = engine.mDiameterPx * ticksStrokeWidth3Vmin;
+                radiusPx = diameterVmin * engine.mRadiusPx;
+                centerXPx = engine.mCenterXPx + centerXVmin * engine.mDiameterPx;
+                centerYPx = engine.mCenterYPx + centerYVmin * engine.mDiameterPx;
+                tickOuterPx = radiusPx * outerTicksDiameterVmin;
+                tickInner1Px = radiusPx * innerTicks1DiameterVmin;
+                tickInner2Px = radiusPx * innerTicks2DiameterVmin;
+                tickInner3Px = radiusPx * innerTicks3DiameterVmin;
+                tickStrokeWidth1Px = engine.mDiameterPx * ticksStrokeWidth1Vmin;
+                tickStrokeWidth2Px = engine.mDiameterPx * ticksStrokeWidth2Vmin;
+                tickStrokeWidth3Px = engine.mDiameterPx * ticksStrokeWidth3Vmin;
                 updateBoundaries();
             }
 
             private void updateBoundaries() {
                 Engine engine = engineWeakReference.get();
                 if (startAngle == 0f && endAngle == 360f) {
-                    pixelLeftBoundary = pixelCenterX - pixelRadius * outerTicksDiameterVmin;
-                    pixelRightBoundary = pixelCenterX + pixelRadius * outerTicksDiameterVmin;
-                    pixelTopBoundary = pixelCenterY - pixelRadius * outerTicksDiameterVmin;
-                    pixelBottomBoundary = pixelCenterY + pixelRadius * outerTicksDiameterVmin;
+                    leftBoundaryPx = centerXPx - radiusPx * outerTicksDiameterVmin;
+                    rightBoundaryPx = centerXPx + radiusPx * outerTicksDiameterVmin;
+                    topBoundaryPx = centerYPx - radiusPx * outerTicksDiameterVmin;
+                    bottomBoundaryPx = centerYPx + radiusPx * outerTicksDiameterVmin;
                 } else {
-                    pixelLeftBoundary = pixelCenterX;
-                    pixelRightBoundary = pixelCenterX;
-                    pixelTopBoundary = pixelCenterY;
-                    pixelBottomBoundary = pixelCenterY;
+                    leftBoundaryPx = centerXPx;
+                    rightBoundaryPx = centerXPx;
+                    topBoundaryPx = centerYPx;
+                    bottomBoundaryPx = centerYPx;
                     float minAngle = Math.min(startAngle, endAngle);
                     float maxAngle = Math.max(startAngle, endAngle);
                     float angle = minAngle;
                     while (true) {
-                        float pointXPx = pixelCenterX + pixelRadius * (float) Math.sin(angle * Math.PI / 180.0);
-                        float pointYPx = pixelCenterY - pixelRadius * (float) Math.cos(angle * Math.PI / 180.0);
-                        pixelLeftBoundary = Math.min(pixelLeftBoundary, pointXPx);
-                        pixelRightBoundary = Math.max(pixelRightBoundary, pointXPx);
-                        pixelTopBoundary = Math.min(pixelTopBoundary, pointYPx);
-                        pixelBottomBoundary = Math.max(pixelBottomBoundary, pointYPx);
+                        float pointXPx = centerXPx + radiusPx * (float) Math.sin(angle * Math.PI / 180.0);
+                        float pointYPx = centerYPx - radiusPx * (float) Math.cos(angle * Math.PI / 180.0);
+                        leftBoundaryPx = Math.min(leftBoundaryPx, pointXPx);
+                        rightBoundaryPx = Math.max(rightBoundaryPx, pointXPx);
+                        topBoundaryPx = Math.min(topBoundaryPx, pointYPx);
+                        bottomBoundaryPx = Math.max(bottomBoundaryPx, pointYPx);
                         if (angle == maxAngle) {
                             break;
                         }
@@ -259,16 +259,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
                 /* add fudge factor */
                 float fudge = engine.mDiameterPx * 0.02f;
-                pixelLeftBoundary -= fudge;
-                pixelRightBoundary += fudge;
-                pixelTopBoundary -= fudge;
-                pixelBottomBoundary += fudge;
+                leftBoundaryPx -= fudge;
+                rightBoundaryPx += fudge;
+                topBoundaryPx -= fudge;
+                bottomBoundaryPx += fudge;
 
                 /* don't put boundaries past the boundaries of the canvas */
-                pixelLeftBoundary = Math.max(pixelLeftBoundary, 0);
-                pixelRightBoundary = Math.min(pixelRightBoundary, engine.mWidthPx);
-                pixelTopBoundary = Math.max(pixelTopBoundary, 0);
-                pixelBottomBoundary = Math.min(pixelBottomBoundary, engine.mHeightPx);
+                leftBoundaryPx = Math.max(leftBoundaryPx, 0);
+                rightBoundaryPx = Math.min(rightBoundaryPx, engine.mWidthPx);
+                topBoundaryPx = Math.max(topBoundaryPx, 0);
+                bottomBoundaryPx = Math.min(bottomBoundaryPx, engine.mHeightPx);
             }
 
             public void draw(Canvas canvas, Boolean ambient) {
@@ -301,7 +301,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 paint.setAlpha(Math.round(255f * Math.min(1f, Math.max(darkOpacity, 0f)) + 0.5f));
                 paint.setStyle(Paint.Style.FILL);
 
-                canvas.drawCircle(pixelCenterX, pixelCenterY, pixelRadius, paint);
+                canvas.drawCircle(centerXPx, centerYPx, radiusPx, paint);
             }
 
             public void drawTicks(Canvas canvas, Boolean ambient) {
@@ -314,8 +314,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
                 Engine engine = engineWeakReference.get();
 
-                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDXPx : 0);
-                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDYPx : 0);
+                float centerXPx = this.centerXPx + (isShadow ? shadowDXPx : 0);
+                float centerYPx = this.centerYPx + (isShadow ? shadowDYPx : 0);
 
                 Paint paint = new Paint();
                 paint.setAntiAlias(true);
@@ -333,7 +333,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
                 float extend = getCircleStrokeWidth() / 2;
 
-                paint.setStrokeWidth(pixelTickStrokeWidth1);
+                paint.setStrokeWidth(tickStrokeWidth1Px);
                 for (int i = 0; i <= numTicks1; i += 1) {
                     float rotation = 1.0f * i / numTicks1;
                     if (isExcluded(rotation)) {
@@ -342,16 +342,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     float angle = startAngle + (endAngle - startAngle) * rotation;
 
                     canvas.save();
-                    canvas.rotate(angle, pixelCenterX, pixelCenterY);
+                    canvas.rotate(angle, centerXPx, centerYPx);
                     canvas.drawLine(
-                            pixelCenterX, pixelCenterY - pixelTickOuter - extend,
-                            pixelCenterX, pixelCenterY - pixelTickInner1 + extend,
+                            centerXPx, centerYPx - tickOuterPx - extend,
+                            centerXPx, centerYPx - tickInner1Px + extend,
                             paint
                     );
                     canvas.restore();
                 }
 
-                paint.setStrokeWidth(pixelTickStrokeWidth2);
+                paint.setStrokeWidth(tickStrokeWidth2Px);
                 for (int i = 0; i <= numTicks2; i += 1) {
                     if ((i * numTicks1) % numTicks2 == 0) {
                         continue;
@@ -364,17 +364,17 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     float angle = startAngle + (endAngle - startAngle) * rotation;
 
                     canvas.save();
-                    canvas.rotate(angle, pixelCenterX, pixelCenterY);
+                    canvas.rotate(angle, centerXPx, centerYPx);
                     canvas.drawLine(
-                            pixelCenterX, pixelCenterY - pixelTickOuter - extend,
-                            pixelCenterX, pixelCenterY - pixelTickInner2 + extend,
+                            centerXPx, centerYPx - tickOuterPx - extend,
+                            centerXPx, centerYPx - tickInner2Px + extend,
                             paint
                     );
                     canvas.restore();
                 }
 
                 if (numTicks3 != 0 && !ambient) {
-                    paint.setStrokeWidth(pixelTickStrokeWidth3);
+                    paint.setStrokeWidth(tickStrokeWidth3Px);
                     for (int i = 0; i <= numTicks3; i += 1) {
                         if ((i * numTicks2) % numTicks3 == 0) {
                             continue;
@@ -390,10 +390,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                         float angle = startAngle + (endAngle - startAngle) * rotation;
 
                         canvas.save();
-                        canvas.rotate(angle, pixelCenterX, pixelCenterY);
+                        canvas.rotate(angle, centerXPx, centerYPx);
                         canvas.drawLine(
-                                pixelCenterX, pixelCenterY - pixelTickOuter - extend,
-                                pixelCenterX, pixelCenterY - pixelTickInner3 + extend,
+                                centerXPx, centerYPx - tickOuterPx - extend,
+                                centerXPx, centerYPx - tickInner3Px + extend,
                                 paint
                         );
                         canvas.restore();
@@ -468,8 +468,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
                 Engine engine = engineWeakReference.get();
 
-                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDXPx : 0);
-                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDYPx : 0);
+                float centerXPx = this.centerXPx + (isShadow ? shadowDXPx : 0);
+                float centerYPx = this.centerYPx + (isShadow ? shadowDYPx : 0);
 
                 Paint textPaint = new Paint();
                 textPaint.setTypeface(mTypeface);
@@ -490,9 +490,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                         String text = textPair.second;
 
                         canvas.save();
-                        canvas.rotate(angle, pixelCenterX, pixelCenterY);
-                        canvas.rotate(-angle, pixelCenterX, pixelCenterY - pixelRadius * 0.6f);
-                        drawVerticallyCenteredText(canvas, text, pixelCenterX, pixelCenterY - pixelRadius * 0.6f, textPaint);
+                        canvas.rotate(angle, centerXPx, centerYPx);
+                        canvas.rotate(-angle, centerXPx, centerYPx - radiusPx * 0.6f);
+                        drawVerticallyCenteredText(canvas, text, centerXPx, centerYPx - radiusPx * 0.6f, textPaint);
                         canvas.restore();
                     }
                 }
@@ -506,28 +506,28 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     endAngle = this.startAngle;
                 }
 
-                float pixelCenterX = this.pixelCenterX + (isShadow ? shadowDXPx : 0);
-                float pixelCenterY = this.pixelCenterY + (isShadow ? shadowDYPx : 0);
+                float centerXPx = this.centerXPx + (isShadow ? shadowDXPx : 0);
+                float centerYPx = this.centerYPx + (isShadow ? shadowDYPx : 0);
 
                 if (excludeTicksFrom == 0f && excludeTicksTo == 0f) {
                     canvas.drawArc(
-                            pixelCenterX - diameterVmin * pixelRadius, pixelCenterY - diameterVmin * pixelRadius,
-                            pixelCenterX + diameterVmin * pixelRadius, pixelCenterY + diameterVmin * pixelRadius,
+                            centerXPx - diameterVmin * radiusPx, centerYPx - diameterVmin * radiusPx,
+                            centerXPx + diameterVmin * radiusPx, centerYPx + diameterVmin * radiusPx,
                             startAngle - 90f,
                             endAngle - startAngle,
                             false, paint
                     );
                 } else {
                     canvas.drawArc(
-                            pixelCenterX - diameterVmin * pixelRadius, pixelCenterY - diameterVmin * pixelRadius,
-                            pixelCenterX + diameterVmin * pixelRadius, pixelCenterY + diameterVmin * pixelRadius,
+                            centerXPx - diameterVmin * radiusPx, centerYPx - diameterVmin * radiusPx,
+                            centerXPx + diameterVmin * radiusPx, centerYPx + diameterVmin * radiusPx,
                             startAngle - 90f,
                             (endAngle - startAngle) * excludeTicksFrom,
                             false, paint
                     );
                     canvas.drawArc(
-                            pixelCenterX - diameterVmin * pixelRadius, pixelCenterY - diameterVmin * pixelRadius,
-                            pixelCenterX + diameterVmin * pixelRadius, pixelCenterY + diameterVmin * pixelRadius,
+                            centerXPx - diameterVmin * radiusPx, centerYPx - diameterVmin * radiusPx,
+                            centerXPx + diameterVmin * radiusPx, centerYPx + diameterVmin * radiusPx,
                             startAngle - 90f + (endAngle - startAngle) * excludeTicksTo,
                             endAngle - startAngle - (endAngle - startAngle) * excludeTicksTo,
                             false, paint
@@ -543,8 +543,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             public boolean contains(int x, int y) {
-                float dx = 0.0f + x - pixelCenterX;
-                float dy = 0.0f + y - pixelCenterY;
+                float dx = 0.0f + x - centerXPx;
+                float dy = 0.0f + y - centerYPx;
                 if (dx == 0.0f && dy == 0.0f) {
                     return true;
                 }
@@ -554,7 +554,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                         return false;
                     }
                 }
-                return dx * dx + dy * dy <= pixelRadius * pixelRadius;
+                return dx * dx + dy * dy <= radiusPx * radiusPx;
             }
 
             public float getCanvasRotationAngle(float rotation) {
@@ -572,13 +572,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public void zoom(Canvas canvas) {
                 Engine engine = engineWeakReference.get();
 
-                float newCenterX = (pixelLeftBoundary + pixelRightBoundary) / 2f;
-                float newCenterY = (pixelTopBoundary + pixelBottomBoundary) / 2f;
-                float dx = newCenterX - pixelCenterX;
-                float dy = newCenterY - pixelCenterY;
+                float newCenterX = (leftBoundaryPx + rightBoundaryPx) / 2f;
+                float newCenterY = (topBoundaryPx + bottomBoundaryPx) / 2f;
+                float dx = newCenterX - centerXPx;
+                float dy = newCenterY - centerYPx;
                 float scale = Math.min(
-                        engine.mWidthPx / (pixelRightBoundary - pixelLeftBoundary),
-                        engine.mHeightPx / (pixelBottomBoundary - pixelTopBoundary)
+                        engine.mWidthPx / (rightBoundaryPx - leftBoundaryPx),
+                        engine.mHeightPx / (bottomBoundaryPx - topBoundaryPx)
                 );
                 canvas.scale(scale, scale, newCenterX, newCenterY);
                 canvas.translate(-dx, -dy);
@@ -622,10 +622,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float shroudThingyRadius = 0.03f;
             public float shroudThingyHoleRadius = 0.01f;
 
-            private float pixelLength;
-            private float pixelWidth;
-            private float pixelShroudThingyRadius;
-            private float pixelShroudThingyHoleRadius;
+            private float lengthPx;
+            private float widthPx;
+            private float shroudThingyRadiusPx;
+            private float shroudThingyHoleRadiusPx;
 
             private float shadowRadiusPx = 0f;
             private int shadowColor = Color.BLACK;
@@ -638,13 +638,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 WatchDial dial = watchDialWeakReference.get();
                 Engine engine = dial.engineWeakReference.get();
 
-                pixelLength = lengthPctRadius * dial.pixelRadius;
-                pixelWidth = widthVmin * engine.mDiameterPx;
+                lengthPx = lengthPctRadius * dial.radiusPx;
+                widthPx = widthVmin * engine.mDiameterPx;
 
-                pixelShroudThingyHoleRadius = shroudThingyHoleRadius * engine.mRadiusPx;
-                pixelShroudThingyRadius = shroudThingyRadius * engine.mRadiusPx;
-                if (pixelShroudThingyRadius < pixelWidth) {
-                    pixelShroudThingyRadius = pixelWidth;
+                shroudThingyHoleRadiusPx = shroudThingyHoleRadius * engine.mRadiusPx;
+                shroudThingyRadiusPx = shroudThingyRadius * engine.mRadiusPx;
+                if (shroudThingyRadiusPx < widthPx) {
+                    shroudThingyRadiusPx = widthPx;
                 }
             }
 
@@ -677,30 +677,30 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 path = new Path();
 
                 if (hasArrowHead) {
-                    float arrowheadDX1 = pixelWidth * arrowHeadSize / 2;
-                    float arrowheadY1 = dial.pixelCenterY - pixelLength + pixelWidth * arrowHeadSize / 2 / (float) Math.tan(((float) Math.PI) / 180f * arrowHeadAngle / 2);
-                    path.moveTo(dial.pixelCenterX - pixelWidth / 2, dial.pixelCenterY);
-                    path.lineTo(dial.pixelCenterX - pixelWidth / 2, arrowheadY1);
-                    path.lineTo(dial.pixelCenterX - arrowheadDX1, arrowheadY1);
-                    path.lineTo(dial.pixelCenterX, dial.pixelCenterY - pixelLength);
-                    path.lineTo(dial.pixelCenterX + arrowheadDX1, arrowheadY1);
-                    path.lineTo(dial.pixelCenterX + pixelWidth / 2, arrowheadY1);
-                    path.lineTo(dial.pixelCenterX + pixelWidth / 2, dial.pixelCenterY);
+                    float arrowheadDX1 = widthPx * arrowHeadSize / 2;
+                    float arrowheadY1 = dial.centerYPx - lengthPx + widthPx * arrowHeadSize / 2 / (float) Math.tan(((float) Math.PI) / 180f * arrowHeadAngle / 2);
+                    path.moveTo(dial.centerXPx - widthPx / 2, dial.centerYPx);
+                    path.lineTo(dial.centerXPx - widthPx / 2, arrowheadY1);
+                    path.lineTo(dial.centerXPx - arrowheadDX1, arrowheadY1);
+                    path.lineTo(dial.centerXPx, dial.centerYPx - lengthPx);
+                    path.lineTo(dial.centerXPx + arrowheadDX1, arrowheadY1);
+                    path.lineTo(dial.centerXPx + widthPx / 2, arrowheadY1);
+                    path.lineTo(dial.centerXPx + widthPx / 2, dial.centerYPx);
                     path.close();
                 } else {
-                    path.moveTo(dial.pixelCenterX - pixelWidth / 2, dial.pixelCenterY);
-                    path.lineTo(dial.pixelCenterX - pixelWidth / 2, dial.pixelCenterY - pixelLength);
-                    path.lineTo(dial.pixelCenterX + pixelWidth / 2, dial.pixelCenterY - pixelLength);
-                    path.lineTo(dial.pixelCenterX + pixelWidth / 2, dial.pixelCenterY);
+                    path.moveTo(dial.centerXPx - widthPx / 2, dial.centerYPx);
+                    path.lineTo(dial.centerXPx - widthPx / 2, dial.centerYPx - lengthPx);
+                    path.lineTo(dial.centerXPx + widthPx / 2, dial.centerYPx - lengthPx);
+                    path.lineTo(dial.centerXPx + widthPx / 2, dial.centerYPx);
                     path.close();
                 }
 
                 Path circlePath = new Path();
-                circlePath.addCircle(dial.pixelCenterX, dial.pixelCenterY, pixelShroudThingyRadius, Path.Direction.CW);
+                circlePath.addCircle(dial.centerXPx, dial.centerYPx, shroudThingyRadiusPx, Path.Direction.CW);
                 path.op(circlePath, Path.Op.UNION);
 
                 circlePath = new Path();
-                circlePath.addCircle(dial.pixelCenterX, dial.pixelCenterY, pixelShroudThingyHoleRadius, Path.Direction.CW);
+                circlePath.addCircle(dial.centerXPx, dial.centerYPx, shroudThingyHoleRadiusPx, Path.Direction.CW);
                 path.op(circlePath, Path.Op.DIFFERENCE);
             }
 
@@ -721,7 +721,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
 
                 canvas.save();
-                canvas.rotate(angle, dial.pixelCenterX, dial.pixelCenterY);
+                canvas.rotate(angle, dial.centerXPx, dial.centerYPx);
                 canvas.drawPath(path, paint);
                 canvas.restore();
             }
