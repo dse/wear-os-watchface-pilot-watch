@@ -618,7 +618,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float arrowHeadAngle = 45f;
             public float arrowHeadSize = 3f;
             public float lengthPctRadius = 1f;
-            public float width = 0.01f;
+            public float widthVmin = 0.005f;
             public float shroudThingyRadius = 0.03f;
             public float shroudThingyHoleRadius = 0.01f;
 
@@ -639,7 +639,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 Engine engine = dial.engineWeakReference.get();
 
                 pixelLength = lengthPctRadius * dial.pixelRadius;
-                pixelWidth = width * engine.mRadiusPx;
+                pixelWidth = widthVmin * engine.mDiameterPx;
 
                 pixelShroudThingyHoleRadius = shroudThingyHoleRadius * engine.mRadiusPx;
                 pixelShroudThingyRadius = shroudThingyRadius * engine.mRadiusPx;
@@ -886,14 +886,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mChronographSecondFractionHand.color = mSecondHandColor;
             mChronographSecondFractionHand.nonAmbientOnly = true;
             mChronographSecondFractionHand.lengthPctRadius = 0.9f;
-            mChronographSecondFractionHand.width = 0.02f;
+            mChronographSecondFractionHand.widthVmin = 0.01f;
             mChronographSecondFractionHand.shadowRadiusPx = 2f;
 
             mChronographSecondHand = new WatchHand(mSubDial3);
             mChronographSecondHand.color = mSecondHandColor;
             mChronographSecondHand.nonAmbientOnly = true;
             mChronographSecondHand.lengthPctRadius = 0.9f;
-            mChronographSecondHand.width = 0.02f;
+            mChronographSecondHand.widthVmin = 0.01f;
             mChronographSecondHand.shadowRadiusPx = 2f;
 
             mChronographMinuteHand = new WatchHand(mSubDial2);
@@ -901,7 +901,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mChronographMinuteHand.nonAmbientOnly = true;
             mChronographMinuteHand.hasArrowHead = true;
             mChronographMinuteHand.lengthPctRadius = 0.8f;
-            mChronographMinuteHand.width = 0.02f;
+            mChronographMinuteHand.widthVmin = 0.01f;
             mChronographMinuteHand.shadowRadiusPx = 3f;
 
             mChronographHourHand = new WatchHand(mSubDial2);
@@ -909,14 +909,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mChronographHourHand.nonAmbientOnly = true;
             mChronographHourHand.hasArrowHead = true;
             mChronographHourHand.lengthPctRadius = 0.8f * 0.7f;
-            mChronographHourHand.width = 0.02f;
+            mChronographHourHand.widthVmin = 0.01f;
             mChronographHourHand.shadowRadiusPx = 2f;
 
             mSecondHand = new WatchHand(mMainDial);
             mSecondHand.color = mSecondHandColor;
             mSecondHand.nonAmbientOnly = true;
             mSecondHand.lengthPctRadius = 0.95f;
-            mSecondHand.width = 0.02f;
+            mSecondHand.widthVmin = 0.01f;
             mSecondHand.shadowRadiusPx = 6f;
 
             mMinuteHand = new WatchHand(mMainDial);
@@ -924,7 +924,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mMinuteHand.nonAmbientOnly = false;
             mMinuteHand.hasArrowHead = true;
             mMinuteHand.lengthPctRadius = 0.9f;
-            mMinuteHand.width = 0.04f;
+            mMinuteHand.widthVmin = 0.02f;
             mMinuteHand.shadowRadiusPx = 5f;
 
             mHourHand = new WatchHand(mMainDial);
@@ -932,7 +932,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mHourHand.nonAmbientOnly = false;
             mHourHand.hasArrowHead = true;
             mHourHand.lengthPctRadius = 0.9f * 0.7f;
-            mHourHand.width = 0.04f;
+            mHourHand.widthVmin = 0.02f;
             mHourHand.shadowRadiusPx = 4f;
 
             mBatteryHand = new WatchHand(mSubDial4);
@@ -940,7 +940,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mBatteryHand.nonAmbientOnly = false;
             mBatteryHand.hasArrowHead = true;
             mBatteryHand.lengthPctRadius = 0.9f;
-            mBatteryHand.width = 0.02f;
+            mBatteryHand.widthVmin = 0.01f;
             mBatteryHand.shadowRadiusPx = 2f;
 
             clearIdle();
