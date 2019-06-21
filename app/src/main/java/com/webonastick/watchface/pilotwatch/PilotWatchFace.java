@@ -781,9 +781,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             initColors();
             initDials();
             initHands();
-            
-
-
 
             clearIdle();
             updateDials();
@@ -1131,7 +1128,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         // TODO: rename these.  Put these where the other variables are.
 
-        private final float DAY_DATE_TEXT_SIZE = 0.0625f;
+        private final float DAY_DATE_TEXT_SIZE = 0.07f;
         private final float DAY_DATE_OUTER = 0.87f;
 
         private float mDayDateTextSize;
@@ -1149,23 +1146,24 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             int width = canvas.getWidth();
             int height = canvas.getHeight();
 
-            Rect bounds = new Rect();
+            Rect dayBounds = new Rect();
+            Rect dateBounds = new Rect();
 
             float maxDayWidth = 0;
             Map<String, Integer> dayMap = mCalendar.getDisplayNames(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
             for (int day = 1; day <= 7; day += 1) {
                 for (String dayText : dayMap.keySet()) {
                     dayText = dayText.toUpperCase();
-                    mDayDateTextPaint.getTextBounds(dayText, 0, dayText.length(), bounds);
-                    maxDayWidth = Math.max(maxDayWidth, bounds.width());
+                    mDayDateTextPaint.getTextBounds(dayText, 0, dayText.length(), dayBounds);
+                    maxDayWidth = Math.max(maxDayWidth, dayBounds.width());
                 }
             }
 
             float maxDateWidth = 0;
             for (int date = 1; date <= 31; date += 1) {
                 String dateText = Integer.toString(date);
-                mDayDateTextPaint.getTextBounds(dateText, 0, dateText.length(), bounds);
-                maxDateWidth = Math.max(maxDateWidth, bounds.width());
+                mDayDateTextPaint.getTextBounds(dateText, 0, dateText.length(), dateBounds);
+                maxDateWidth = Math.max(maxDateWidth, dateBounds.width());
             }
 
             mDayDateTextSize = mDiameterPx * DAY_DATE_TEXT_SIZE;
@@ -1178,12 +1176,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             float dayWindowRightX = dateWindowLeftX - mDiameterPx * 0.01f;
             float dayWindowLeftX = dayWindowRightX - maxDayWidth - mDiameterPx * 0.02f;
 
-            mDayWindowCenterX = (dayWindowLeftX + dayWindowRightX) / 2f;
+            mDayWindowCenterX  = (dayWindowLeftX  + dayWindowRightX)  / 2f;
             mDateWindowCenterX = (dateWindowLeftX + dateWindowRightX) / 2f;
 
-            mDayDateTop = mCenterYPx - mDayDateTextSize * 0.6f;
-            mDayDateBottom = mCenterYPx + mDayDateTextSize * 0.6f;
-            mDayDateLeft = dayWindowLeftX;
+            mDayDateTop    = mCenterYPx - mDayDateTextSize * 0.5f;
+            mDayDateBottom = mCenterYPx + mDayDateTextSize * 0.5f;
+            mDayDateLeft  = dayWindowLeftX;
             mDayDateRight = dateWindowRightX;
 
             Path dialPath = new Path();
@@ -1210,7 +1208,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 backgroundPaint.setColor(Color.BLACK);
             } else {
                 backgroundPaint.setColor(mBackgroundColor);
-                backgroundPaint.setShadowLayer(3, 0, 3, Color.BLACK);
+                backgroundPaint.setShadowLayer(2, 0, 0, Color.BLACK);
             }
             backgroundPaint.setStyle(Paint.Style.FILL);
             canvas.drawPath(dialPath, backgroundPaint);
@@ -1308,8 +1306,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Rect dateBounds = new Rect();
             mDayDateTextPaint.getTextBounds(dateText, 0, dateText.length(), dateBounds);
 
-            canvas.drawText(dayText, mDayWindowCenterX, mCenterYPx + dayBounds.height() / 2, mDayDateTextPaint);
-            canvas.drawText(dateText, mDateWindowCenterX, mCenterYPx + dateBounds.height() / 2, mDayDateTextPaint);
+            float dayY  = mCenterYPx + dayBounds.height() / 2  - dayBounds.bottom;
+            float dateY = mCenterYPx + dateBounds.height() / 2 - dateBounds.bottom;
+
+            canvas.drawText(dayText,  mDayWindowCenterX,  dayY,  mDayDateTextPaint);
+            canvas.drawText(dateText, mDateWindowCenterX, dateY, mDayDateTextPaint);
         }
 
         private void drawWatchFace(Canvas canvas) {
