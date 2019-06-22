@@ -6,8 +6,9 @@ android {
         applicationId "com.webonastick.watchface.pilotwatch"
         minSdkVersion 23
         targetSdkVersion 28
+        // increase for each build
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         multiDexEnabled true
     }
     buildTypes {
