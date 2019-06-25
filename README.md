@@ -1,6 +1,8 @@
 # Pilot Watch 3000
 
-[Pilot Watch](https://webonastick.com/wear-os/pilot-watch-3000/)
+![Pilot Watch 3000](images/icon-512x512.png)
+
+[Pilot Watch 3000](https://webonastick.com/wear-os/pilot-watch-3000/)
 is an analog watchface with a chronograph (stopwatch) function. It's like most slide-rule chronograph watches, but without the slide rule.
 
 Source code is on [GitHub](https://github.com/dse/wear-os-watchface-pilot-watch).
