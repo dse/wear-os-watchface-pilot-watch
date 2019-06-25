@@ -1143,8 +1143,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private void drawClockDial(Canvas canvas, boolean ambient) {
             canvas.drawColor(Color.WHITE);
 
-            int width = canvas.getWidth();
-            int height = canvas.getHeight();
+            int widthPx = canvas.getWidth();
+            int heightPx = canvas.getHeight();
 
             Rect dayBounds = new Rect();
             Rect dateBounds = new Rect();
@@ -1185,7 +1185,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mDayDateRightPx = dateWindowRightXPx;
 
             Path dialPath = new Path();
-            dialPath.addRect(0, 0, width, height, Path.Direction.CW);
+            dialPath.addRect(0, 0, widthPx, heightPx, Path.Direction.CW);
 
             Path dateWindowPath = new Path();
             dateWindowPath.addRect(
