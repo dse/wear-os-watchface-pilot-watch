@@ -1307,8 +1307,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             float dx = isShadow ? 0f : 0f;
             float dy = isShadow ? 1f : 0f;
 
-            canvas.drawText("PILOT", mCenterXPx - mDiameterPx * 0.26f + dx, mCenterYPx - mDiameterPx * 0.25f + dy, textPaint);
-            canvas.drawText("WATCH", mCenterXPx - mDiameterPx * 0.26f + dx, mCenterYPx - mDiameterPx * 0.21f + dy, textPaint);
+            canvas.drawText("PILOT", mCenterXPx - mDiameterPx * 0.26f + dx, mCenterYPx - mDiameterPx * 0.28f + dy, textPaint);
+            canvas.drawText("WATCH", mCenterXPx - mDiameterPx * 0.26f + dx, mCenterYPx - mDiameterPx * 0.24f + dy, textPaint);
+            canvas.drawText("3000",  mCenterXPx - mDiameterPx * 0.26f + dx, mCenterYPx - mDiameterPx * 0.20f + dy, textPaint);
         }
 
         /**
