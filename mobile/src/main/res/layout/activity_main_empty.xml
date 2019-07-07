@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
+    tools:context=".MainEmptyActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="0dp">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="1in"
+            android:layout_height="1in"
+            android:layout_margin="8dp"
+            android:contentDescription="TODO"
+            app:srcCompat="@drawable/icon_512x512" />
+
+        <EditText
+            android:id="@+id/editText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@null"
+            android:editable="false"
+            android:ems="10"
+            android:gravity="center_horizontal"
+            android:inputType="none"
+            android:text="@string/pilot_watch_title"
+            android:textAppearance="@android:style/TextAppearance.Material.Title"
+            android:textColor="#ffffffff"
+            android:textSize="36sp" />
+
+        <EditText
+            android:id="@+id/editText2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@null"
+            android:editable="false"
+            android:ems="10"
+            android:gravity="center_horizontal"
+            android:inputType="none"
+            android:text="@string/pilot_watch_text"
+            android:textAppearance="@android:style/TextAppearance.Material.Body1"
+            android:textColor="#ffffffff" />
+
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

@@ -4,11 +4,14 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.webonastick.watchface.pilotwatch"
-        minSdkVersion 23
+        minSdkVersion 20
         targetSdkVersion 28
-        // increase for each build
-        versionCode 1
-        versionName "1.0.0"
+
+        // increase for each release; sync with mobile build.gradle
+        // last digit 1 for mobile, 0 for wear
+        versionCode 30
+        versionName "1.0.91"
+
         multiDexEnabled true
     }
     buildTypes {
