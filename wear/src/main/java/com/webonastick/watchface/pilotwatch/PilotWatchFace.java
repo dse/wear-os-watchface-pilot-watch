@@ -138,6 +138,51 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         private static final float MINIMUM_STROKE_WIDTH_PX = 1f;
 
+        private WatchDial mMainDial;
+        private WatchDial mSubDial1;
+        private WatchDial mSubDial2;
+        private WatchDial mSubDial3;
+        private WatchDial mSubDial4;
+
+        private WatchHand mHourHand;
+        private WatchHand mMinuteHand;
+        private WatchHand mSecondHand;
+
+        private WatchHand mChronographSecondFractionHand;
+        private WatchHand mChronographSecondHand;
+        private WatchHand mChronographMinuteHand;
+        private WatchHand mChronographHourHand;
+        private WatchHand mBatteryHand;
+
+        private Typeface mTypeface = Typeface.SANS_SERIF;
+
+        private boolean mZoomOnSubDial4 = false;
+
+        private final float DAY_DATE_TEXT_SIZE_VMIN = 0.07f;
+        private final float DAY_DATE_OUTER_PX = 0.87f;
+
+        private float mDayDateTextSizePx;
+        private float mDayWindowCenterXPx;
+        private float mDateWindowCenterXPx;
+        private float mDayDateTopPx;
+        private float mDayDateBottomPx;
+        private float mDayDateLeftPx;
+        private float mDayDateRightPx;
+        private Paint mDayDateTextPaint;
+
+        private boolean stopwatchRunning = false;
+        private long stopwatchStartTimeMs = 0;
+        private long stopwatchTimeMs = 0;
+
+        /**
+         * For keeping the watch face on longer than the standard
+         * period of time.
+         */
+        private int mCustomTimeoutSeconds = 0;
+        private PowerManager mPowerManager = null;
+        private PowerManager.WakeLock mWakeLock = null;
+        private boolean mFullWakeLockDenied = false;
+
         private class WatchDial {
             public WeakReference<Engine> engineWeakReference;
 
@@ -713,26 +758,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private WatchDial mMainDial;
-        private WatchDial mSubDial1;
-        private WatchDial mSubDial2;
-        private WatchDial mSubDial3;
-        private WatchDial mSubDial4;
-
-        private WatchHand mHourHand;
-        private WatchHand mMinuteHand;
-        private WatchHand mSecondHand;
-
-        private WatchHand mChronographSecondFractionHand;
-        private WatchHand mChronographSecondHand;
-        private WatchHand mChronographMinuteHand;
-        private WatchHand mChronographHourHand;
-        private WatchHand mBatteryHand;
-
-        private Typeface mTypeface = Typeface.SANS_SERIF;
-
-        private boolean mZoomOnSubDial4 = false;
-
         @Override
         public void onCreate(SurfaceHolder holder) {
             if (Build.MODEL.startsWith("sdk_") || Build.FINGERPRINT.contains("/sdk_")) {
@@ -1185,20 +1210,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial4.draw(backgroundCanvas, true);
         }
 
-        // TODO: rename these.  Put these where the other variables are.
-
-        private final float DAY_DATE_TEXT_SIZE_VMIN = 0.07f;
-        private final float DAY_DATE_OUTER_PX = 0.87f;
-
-        private float mDayDateTextSizePx;
-        private float mDayWindowCenterXPx;
-        private float mDateWindowCenterXPx;
-        private float mDayDateTopPx;
-        private float mDayDateBottomPx;
-        private float mDayDateLeftPx;
-        private float mDayDateRightPx;
-        private Paint mDayDateTextPaint;
-
         private void drawClockDial(Canvas canvas, boolean ambient) {
             canvas.drawColor(Color.WHITE);
 
@@ -1505,10 +1516,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             PilotWatchFace.this.unregisterReceiver(mTimeZoneReceiver);
         }
 
-        private boolean stopwatchRunning = false;
-        private long stopwatchStartTimeMs = 0;
-        private long stopwatchTimeMs = 0;
-
         private void stopwatchButton1() {
             if (stopwatchRunning) {
                 pauseStopwatch();
@@ -1585,8 +1592,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private int mCustomTimeoutSeconds = 0;
-
         private void setCustomTimeout(int seconds) {
             if (seconds > 0) {
                 mCustomTimeoutSeconds = seconds;
@@ -1623,15 +1628,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
             // DO NOT DELETE THIS METHOD.
         }
-
-        /**
-         * For keeping the watch face on longer than the standard
-         * period of time.
-         */
-
-        private PowerManager mPowerManager = null;
-        private PowerManager.WakeLock mWakeLock = null;
-        private boolean mFullWakeLockDenied = false;
 
         private void acquireWakeLock() {
             if (mFullWakeLockDenied) {
