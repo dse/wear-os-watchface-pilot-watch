@@ -154,9 +154,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float circle2Diameter = 0f;
             public float circleStrokeWidthVmin = 0f;
 
-            /* { 0.25f, "3" }, { 0.5f, "6" }, { 0.5f, "9" }, ... */ 
+            /* { 0.25f, "3" }, { 0.5f, "6" }, { 0.5f, "9" }, ... */
             public ArrayList<Pair<Float, String>> textPairs = new ArrayList<Pair<Float, String>>();
-            
+
             public float textSizeVmin = 0.05f;
 
             public float darkOpacity = 0f;
@@ -180,7 +180,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             private int shadowColor = Color.BLACK;
             private float shadowDXPx = 0;
             private float shadowDYPx = 1;
-            
+
             public ArrayList<WatchDialTickSet> tickSets = new ArrayList<WatchDialTickSet>();
 
             public void addText(float rotation, String text) {
@@ -195,7 +195,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public WatchDial(Engine engine) {
                 engineWeakReference = new WeakReference<Engine>(engine);
             }
-            
+
             public void addTickSet(WatchDialTickSet tickSet) {
                 tickSets.add(tickSet);
             }
@@ -294,7 +294,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 if (isShadow && (ambient || (shadowDXPx == 0 && shadowDYPx == 0))) {
                     return;
                 }
-                
+
                 for (WatchDialTickSet tickSet : tickSets) {
                     tickSet.draw(canvas, ambient, isShadow);
                 }
@@ -479,7 +479,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 canvas.translate(-dx, -dy);
             }
         }
-        
+
         private class WatchDialTickSet {
             public WeakReference<WatchDial> watchDialWeakReference;
 
@@ -493,26 +493,26 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float strokeWidthVmin = 0.01f;
             public boolean nonAmbientOnly = false;
             public ArrayList<Integer> excludeNumberOfTicks = new ArrayList<Integer>();
-            
+
             public void excludeTicks(WatchDialTickSet ts) {
                 excludeNumberOfTicks.add(ts.numberOfTicks);
             }
-            
+
             public void draw(Canvas canvas, Boolean ambient) {
                 draw(canvas, ambient, false);
             }
-            
+
             public void draw(Canvas canvas, Boolean ambient, Boolean isShadow) {
                 WatchDial watchDial = watchDialWeakReference.get();
                 Engine engine = watchDial.engineWeakReference.get();
-                
+
                 if (ambient && nonAmbientOnly) {
                     return;
                 }
 
                 float centerXPx = watchDial.centerXPx + (isShadow ? watchDial.shadowDXPx : 0);
                 float centerYPx = watchDial.centerYPx + (isShadow ? watchDial.shadowDYPx : 0);
-                
+
                 Paint paint = new Paint();
                 paint.setAntiAlias(true);
                 if (ambient) {
@@ -529,7 +529,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
                 float extend = watchDial.getCircleStrokeWidth() / 2;
                 paint.setStrokeWidth(Math.max(MINIMUM_STROKE_WIDTH_PX, strokeWidthVmin * engine.mDiameterPx));
-                
+
                 float y1 = centerYPx - outerDiameter * watchDial.radiusPx;
                 float y2 = centerYPx - innerDiameter * watchDial.radiusPx;
 
@@ -558,7 +558,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     }
                     canvas.restore();
                 }
-            }            
+            }
         }
 
         private void zoomCanvas(Canvas canvas, float x1, float x2, float y1, float y2) {
@@ -654,7 +654,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 WatchDial dial = watchDialWeakReference.get();
 
                 path = new Path();
-                
+
                 float leftPx   = dial.centerXPx - widthPx / 2;
                 float rightPx  = dial.centerXPx + widthPx / 2;
                 float topPx    = dial.centerYPx - lengthPx;
@@ -764,7 +764,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             setCustomTimeout(15);
         }
-        
+
         private void initColors() {
             mBackgroundColor = ContextCompat.getColor(getApplicationContext(), R.color.background_color);
             mHourHandColor = ContextCompat.getColor(getApplicationContext(), R.color.hour_hand_color);
@@ -772,7 +772,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSecondHandColor = ContextCompat.getColor(getApplicationContext(), R.color.second_hand_color);
             mTickColor = ContextCompat.getColor(getApplicationContext(), R.color.tick_color);
         }
-        
+
         private void initMainDial() {
             mMainDial = new WatchDial(this);
             mMainDial.diameterVmin = 1f;
@@ -962,7 +962,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             initSubDial3();
             initSubDial4();
         }
-        
+
         private void initHands() {
             mChronographSecondFractionHand = new WatchHand(mSubDial1);
             mChronographSecondFractionHand.color = mSecondHandColor;
