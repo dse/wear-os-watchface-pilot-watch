@@ -209,13 +209,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             private float radiusPx;
             private float centerXPx;
             private float centerYPx;
-            private float tickOuterPx;
-            private float tickInner1Px;
-            private float tickInner2Px;
-            private float tickInner3Px;
-            private float ticks1StrokeWidthPx;
-            private float ticks2StrokeWidthPx;
-            private float ticks3StrokeWidthPx;
 
             private float leftBoundaryPx;
             private float rightBoundaryPx;
