@@ -158,8 +158,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         private boolean mZoomOnSubDial4 = false;
 
-        private final float DAY_DATE_TEXT_SIZE_VMIN = 0.07f;
-        private final float DAY_DATE_OUTER_VMIN = 0.87f;
+        private float mWatchFaceNameTextSizeVmin = 0.04f;
+        private float mWatchFaceNameLeftOffsetVmin = 0.26f;
+        private float mWatchFaceNameTopOffsetVmin = 0.26f;
+
+        private float mDayDateTextSizeVmin = 0.07f;
+        private float mDayDateOuterVmin = 0.87f;
 
         private float mDayDateTextSizePx;
         private float mDayWindowCenterXPx;
@@ -1152,7 +1156,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             mDayDateTextPaint = new Paint();
             mDayDateTextPaint.setAntiAlias(true);
-            mDayDateTextPaint.setTextSize(mDiameterPx * DAY_DATE_TEXT_SIZE_VMIN);
+            mDayDateTextPaint.setTextSize(mDiameterPx * mDayDateTextSizeVmin);
             mDayDateTextPaint.setColor(Color.BLACK);
             mDayDateTextPaint.setTypeface(mTypeface);
             mDayDateTextPaint.setTextAlign(Paint.Align.CENTER);
@@ -1229,10 +1233,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 maxDateWidthPx = Math.max(maxDateWidthPx, dateBounds.width());
             }
 
-            mDayDateTextSizePx = mDiameterPx * DAY_DATE_TEXT_SIZE_VMIN;
+            mDayDateTextSizePx = mDiameterPx * mDayDateTextSizeVmin;
 
             /* 1 to 31, outer */
-            float dateWindowRightXPx = mCenterXPx + mRadiusPx * DAY_DATE_OUTER_VMIN;
+            float dateWindowRightXPx = mCenterXPx + mRadiusPx * mDayDateOuterVmin;
             float dateWindowLeftXPx = dateWindowRightXPx - maxDateWidthPx - mDiameterPx * 0.02f;
 
             /* SUN to SAT, inner */
@@ -1280,10 +1284,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             drawWatchFaceName(canvas, ambient, false);
         }
 
-        private static final float WATCH_FACE_NAME_TEXT_SIZE = 0.04f;
-        private static final float WATCH_FACE_NAME_LEFT_OFFSET = 0.26f;
-        private static final float WATCH_FACE_NAME_TOP_OFFSET = 0.26f;
-
         private void drawWatchFaceName(Canvas canvas, Boolean ambient, Boolean isShadow) {
             if (isShadow && ambient) {
                 return;
@@ -1300,20 +1300,20 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     textPaint.setColor(mTickColor);
                 }
             }
-            textPaint.setTextSize(WATCH_FACE_NAME_TEXT_SIZE * mDiameterPx);
+            textPaint.setTextSize(mWatchFaceNameTextSizeVmin * mDiameterPx);
             textPaint.setTypeface(mTypeface);
             textPaint.setTextAlign(Paint.Align.CENTER);
 
             float dx = isShadow ? 0f : 0f;
             float dy = isShadow ? 1f : 0f;
 
-            float watchFaceNameYPx = mCenterYPx - mDiameterPx * (WATCH_FACE_NAME_TOP_OFFSET + 0.5f * WATCH_FACE_NAME_TEXT_SIZE);
+            float watchFaceNameYPx = mCenterYPx - mDiameterPx * (mWatchFaceNameTopOffsetVmin + 0.5f * mWatchFaceNameTextSizeVmin);
 
-            canvas.drawText("PILOT", mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
-            watchFaceNameYPx += mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
-            canvas.drawText("WATCH", mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
-            watchFaceNameYPx += mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
-            canvas.drawText("3000", mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
+            canvas.drawText("PILOT", mCenterXPx - mDiameterPx * mWatchFaceNameLeftOffsetVmin + dx, watchFaceNameYPx + dy, textPaint);
+            watchFaceNameYPx += mDiameterPx * mWatchFaceNameTextSizeVmin;
+            canvas.drawText("WATCH", mCenterXPx - mDiameterPx * mWatchFaceNameLeftOffsetVmin + dx, watchFaceNameYPx + dy, textPaint);
+            watchFaceNameYPx += mDiameterPx * mWatchFaceNameTextSizeVmin;
+            canvas.drawText("3000", mCenterXPx - mDiameterPx * mWatchFaceNameLeftOffsetVmin + dx, watchFaceNameYPx + dy, textPaint);
         }
 
         /**
