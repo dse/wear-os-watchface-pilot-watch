@@ -159,7 +159,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private boolean mZoomOnSubDial4 = false;
 
         private final float DAY_DATE_TEXT_SIZE_VMIN = 0.07f;
-        private final float DAY_DATE_OUTER_PX = 0.87f;
+        private final float DAY_DATE_OUTER_VMIN = 0.87f;
 
         private float mDayDateTextSizePx;
         private float mDayWindowCenterXPx;
@@ -1239,10 +1239,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mDayDateTextSizePx = mDiameterPx * DAY_DATE_TEXT_SIZE_VMIN;
 
             /* 1 to 31, outer */
-            float dateWindowRightXPx = mCenterXPx + mRadiusPx * DAY_DATE_OUTER_PX;
+            float dateWindowRightXPx = mCenterXPx + mRadiusPx * DAY_DATE_OUTER_VMIN;
             float dateWindowLeftXPx = dateWindowRightXPx - maxDateWidthPx - mDiameterPx * 0.02f;
 
-            /* SUN to SAY, inner */
+            /* SUN to SAT, inner */
             float dayWindowRightXPx = dateWindowLeftXPx - mDiameterPx * 0.01f;
             float dayWindowLeftXPx = dayWindowRightXPx - maxDayWidthPx - mDiameterPx * 0.02f;
 
@@ -1283,11 +1283,15 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             backgroundPaint.setStyle(Paint.Style.FILL);
             canvas.drawPath(dialPath, backgroundPaint);
 
-            drawClockBrand(canvas, ambient, true);
-            drawClockBrand(canvas, ambient, false);
+            drawWatchFaceName(canvas, ambient, true);
+            drawWatchFaceName(canvas, ambient, false);
         }
 
-        private void drawClockBrand(Canvas canvas, Boolean ambient, Boolean isShadow) {
+        private static final float WATCH_FACE_NAME_TEXT_SIZE = 0.04f;
+        private static final float WATCH_FACE_NAME_LEFT_OFFSET = 0.26f;
+        private static final float WATCH_FACE_NAME_TOP_OFFSET = 0.26f;
+
+        private void drawWatchFaceName(Canvas canvas, Boolean ambient, Boolean isShadow) {
             if (isShadow && ambient) {
                 return;
             }
@@ -1303,16 +1307,20 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     textPaint.setColor(mTickColor);
                 }
             }
-            textPaint.setTextSize(0.04f * mDiameterPx);
+            textPaint.setTextSize(WATCH_FACE_NAME_TEXT_SIZE * mDiameterPx);
             textPaint.setTypeface(mTypeface);
             textPaint.setTextAlign(Paint.Align.CENTER);
 
             float dx = isShadow ? 0f : 0f;
             float dy = isShadow ? 1f : 0f;
 
-            canvas.drawText("PILOT", mCenterXPx - mDiameterPx * 0.26f + dx, mCenterYPx - mDiameterPx * 0.28f + dy, textPaint);
-            canvas.drawText("WATCH", mCenterXPx - mDiameterPx * 0.26f + dx, mCenterYPx - mDiameterPx * 0.24f + dy, textPaint);
-            canvas.drawText("3000",  mCenterXPx - mDiameterPx * 0.26f + dx, mCenterYPx - mDiameterPx * 0.20f + dy, textPaint);
+            float watchFaceNameYPx = mCenterYPx - mDiameterPx * (WATCH_FACE_NAME_TOP_OFFSET + 0.5f * WATCH_FACE_NAME_TEXT_SIZE);
+
+            canvas.drawText("PILOT", mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
+            watchFaceNameYPx -= mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
+            canvas.drawText("WATCH", mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
+            watchFaceNameYPx -= mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
+            canvas.drawText("3000",  mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
         }
 
         /**
