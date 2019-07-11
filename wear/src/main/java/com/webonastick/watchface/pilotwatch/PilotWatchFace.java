@@ -2,14 +2,14 @@ package com.webonastick.watchface.pilotwatch;
 
 /**
  * Pilot Watch 3000 watchface for Wear OS and Android Wear.
- *
+ * <p>
  * Notes about variable names:
  * - A lot of them end with units.
  * - Px is pixels.
  * - Vmin is the unit of a multiple of the viewport's width or height,
- *   whichever is less.  Example: on a 300*400 display, 0.5 vmin = 150px.
- *   It's kind of like the vmin unit in CSS, except it's not a percentage,
- *   it's between 0.0 and 1.0 for 0 to 100%.
+ * whichever is less.  Example: on a 300*400 display, 0.5 vmin = 150px.
+ * It's kind of like the vmin unit in CSS, except it's not a percentage,
+ * it's between 0.0 and 1.0 for 0 to 100%.
  * - All angles are assumed to be DEGREES unless otherwise indicated.
  * - Pct means Percentage.
  */
@@ -571,15 +571,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 float y1 = centerYPx - outerDiameter * watchDial.radiusPx;
                 float y2 = centerYPx - innerDiameter * watchDial.radiusPx;
 
+                tick:
                 for (int i = 0; i <= numberOfTicks; i += 1) {
                     for (int n : excludeNumberOfTicks) {
                         if ((i * n) % numberOfTicks == 0) {
-                            continue;
+                            continue tick;
                         }
                     }
                     float rotation = 1.0f * i / numberOfTicks;
                     if (watchDial.isExcluded(rotation)) {
-                        continue;
+                        continue tick;
                     }
                     float angle = watchDial.startAngle +
                             (watchDial.endAngle - watchDial.startAngle) * rotation;
@@ -623,7 +624,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private class WatchHand {
             public WeakReference<WatchDial> watchDialWeakReference;
 
-            public Canvas canvas;
             public Paint paint;
             public Path path;
             public int color;
@@ -654,9 +654,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 WatchDial dial = watchDialWeakReference.get();
                 Engine engine = dial.engineWeakReference.get();
 
-                lengthPx       = lengthPctRadius * dial.radiusPx;
+                lengthPx = lengthPctRadius * dial.radiusPx;
                 lengthBehindPx = lengthBehindPctRadius * dial.radiusPx;
-                widthPx        = widthVmin * engine.mDiameterPx;
+                widthPx = widthVmin * engine.mDiameterPx;
 
                 shroudThingyHoleRadiusPx = shroudThingyHoleRadius * engine.mRadiusPx;
                 shroudThingyRadiusPx = shroudThingyRadius * engine.mRadiusPx;
@@ -693,9 +693,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
                 path = new Path();
 
-                float leftPx   = dial.centerXPx - widthPx / 2;
-                float rightPx  = dial.centerXPx + widthPx / 2;
-                float topPx    = dial.centerYPx - lengthPx;
+                float leftPx = dial.centerXPx - widthPx / 2;
+                float rightPx = dial.centerXPx + widthPx / 2;
+                float topPx = dial.centerYPx - lengthPx;
                 float bottomPx = dial.centerYPx + lengthBehindPx;
 
                 if (hasArrowHead) {
@@ -1239,7 +1239,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             float dayWindowRightXPx = dateWindowLeftXPx - mDiameterPx * 0.01f;
             float dayWindowLeftXPx = dayWindowRightXPx - maxDayWidthPx - mDiameterPx * 0.02f;
 
-            mDayWindowCenterXPx = (dayWindowLeftXPx  + dayWindowRightXPx)  / 2f;
+            mDayWindowCenterXPx = (dayWindowLeftXPx + dayWindowRightXPx) / 2f;
             mDateWindowCenterXPx = (dateWindowLeftXPx + dateWindowRightXPx) / 2f;
 
             mDayDateTopPx = mCenterYPx - mDayDateTextSizePx * 0.5f;
@@ -1313,7 +1313,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             watchFaceNameYPx += mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
             canvas.drawText("WATCH", mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
             watchFaceNameYPx += mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
-            canvas.drawText("3000",  mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
+            canvas.drawText("3000", mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
         }
 
         /**
@@ -1408,10 +1408,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Rect dateBounds = new Rect();
             mDayDateTextPaint.getTextBounds(dateText, 0, dateText.length(), dateBounds);
 
-            float dayY  = mCenterYPx + dayBounds.height() / 2  - dayBounds.bottom;
+            float dayY = mCenterYPx + dayBounds.height() / 2 - dayBounds.bottom;
             float dateY = mCenterYPx + dateBounds.height() / 2 - dateBounds.bottom;
 
-            canvas.drawText(dayText, mDayWindowCenterXPx,  dayY,  mDayDateTextPaint);
+            canvas.drawText(dayText, mDayWindowCenterXPx, dayY, mDayDateTextPaint);
             canvas.drawText(dateText, mDateWindowCenterXPx, dateY, mDayDateTextPaint);
         }
 
