@@ -1317,9 +1317,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             float watchFaceNameYPx = mCenterYPx - mDiameterPx * (WATCH_FACE_NAME_TOP_OFFSET + 0.5f * WATCH_FACE_NAME_TEXT_SIZE);
 
             canvas.drawText("PILOT", mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
-            watchFaceNameYPx -= mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
+            watchFaceNameYPx += mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
             canvas.drawText("WATCH", mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
-            watchFaceNameYPx -= mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
+            watchFaceNameYPx += mDiameterPx * WATCH_FACE_NAME_TEXT_SIZE;
             canvas.drawText("3000",  mCenterXPx - mDiameterPx * WATCH_FACE_NAME_LEFT_OFFSET + dx, watchFaceNameYPx + dy, textPaint);
         }
 
