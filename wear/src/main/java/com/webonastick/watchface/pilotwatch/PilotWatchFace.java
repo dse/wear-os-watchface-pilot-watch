@@ -92,6 +92,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
     }
 
+    enum BezelType {
+        BEZEL_NONE,
+        BEZEL_SLIDE_RULE,
+        BEZEL_TACHYMETER
+    };
+
     private class Engine extends CanvasWatchFaceService.Engine {
         private static final String TAG = "PilotWatchFace";
 
@@ -117,11 +123,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private int mMinuteHandColor;
         private int mSecondHandColor;
         private int mTickColor;
-
-        // obsolete
-//        private float mRadiusPx;
-//        private float mDiameterPx;
-
+        
         // watch canvas/surface
         private float mSurfaceCenterXPx;
         private float mSurfaceCenterYPx;
@@ -431,7 +433,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 } else {
                     textPaint.setColor(Color.WHITE);
                 }
-                textPaint.setTextSize(engine.mSurfaceVminPx * textSizeVmin);
+                textPaint.setTextSize(engine.getClockDialTextSizePx(textSizeVmin));
                 textPaint.setAntiAlias(true);
                 textPaint.setTextAlign(Paint.Align.CENTER);
                 textPaint.setStyle(Paint.Style.FILL);
@@ -1178,19 +1180,19 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mDialDiameterPx = mSurfaceVminPx - MINIMUM_STROKE_WIDTH_PX;
             mDialRadiusPx = mDialDiameterPx / 2;
 
-            mClockDialDiameterPx = mDialDiameterPx * 1.00f;
+            mClockDialDiameterPx = mDialDiameterPx * 0.80f;
             mClockDialRadiusPx = mClockDialDiameterPx / 2;
 
             mDayTextPaint = new Paint();
             mDayTextPaint.setAntiAlias(true);
-            mDayTextPaint.setTextSize(mSurfaceVminPx * mDayDateTextSizeVmin);
+            mDayTextPaint.setTextSize(getClockDialTextSizePx(mDayDateTextSizeVmin));
             mDayTextPaint.setColor(Color.BLACK);
             mDayTextPaint.setTypeface(mCondensedTypeface);
             mDayTextPaint.setTextAlign(Paint.Align.CENTER);
 
             mDateTextPaint = new Paint();
             mDateTextPaint.setAntiAlias(true);
-            mDateTextPaint.setTextSize(mSurfaceVminPx * mDayDateTextSizeVmin);
+            mDateTextPaint.setTextSize(getClockDialTextSizePx(mDayDateTextSizeVmin));
             mDateTextPaint.setColor(Color.BLACK);
             mDateTextPaint.setTypeface(mTypeface);
             mDateTextPaint.setTextAlign(Paint.Align.CENTER);
@@ -1274,7 +1276,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 maxDateBounds.bottom = Math.max(maxDateBounds.bottom, dateBounds.bottom);
             }
 
-            mDayDateTextSizePx = mSurfaceVminPx * mDayDateTextSizeVmin;
+            mDayDateTextSizePx = getClockDialTextSizePx(mDayDateTextSizeVmin);
 
             /* 1 to 31, outer */
             float dateWindowRightXPx = mSurfaceCenterXPx + mClockDialRadiusPx * mDayDateOuterVmin;
@@ -1341,7 +1343,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     textPaint.setColor(mTickColor);
                 }
             }
-            textPaint.setTextSize(mWatchFaceNameTextSizeVmin * mSurfaceVminPx);
+            textPaint.setTextSize(getClockDialTextSizePx(mWatchFaceNameTextSizeVmin));
             textPaint.setTypeface(mTypeface);
             textPaint.setTextAlign(Paint.Align.CENTER);
 
@@ -1350,12 +1352,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             float watchFaceNameXPx = mSurfaceCenterXPx - mClockDialDiameterPx * mWatchFaceNameLeftOffsetVmin;
             float watchFaceNameYPx = mSurfaceCenterYPx - mClockDialDiameterPx * mWatchFaceNameTopOffsetVmin;
-            watchFaceNameYPx -= 0.5 * mSurfaceVminPx * mWatchFaceNameTextSizeVmin;
+            watchFaceNameYPx -= 0.65 * getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
 
             canvas.drawText("PILOT", watchFaceNameXPx + dx, watchFaceNameYPx + dy, textPaint);
-            watchFaceNameYPx += mSurfaceVminPx * mWatchFaceNameTextSizeVmin;
+            watchFaceNameYPx += getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
             canvas.drawText("WATCH", watchFaceNameXPx + dx, watchFaceNameYPx + dy, textPaint);
-            watchFaceNameYPx += mSurfaceVminPx * mWatchFaceNameTextSizeVmin;
+            watchFaceNameYPx += getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
             canvas.drawText("3000", watchFaceNameXPx + dx, watchFaceNameYPx + dy, textPaint);
         }
 
@@ -1707,6 +1709,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             if (mWakeLock != null) {
                 mWakeLock.release();
             }
+        }
+
+        private float getClockDialTextSizePx(float vmin) {
+            return mClockDialDiameterPx * vmin;
         }
     }
 
