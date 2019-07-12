@@ -1250,32 +1250,39 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Rect dayBounds = new Rect();
             Rect dateBounds = new Rect();
 
-            float maxDayWidthPx = 0;
+            Rect maxDayBounds = new Rect();
+            Rect maxDateBounds = new Rect();
+
             Map<String, Integer> dayMap = mCalendar.getDisplayNames(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
             for (int day = 1; day <= 7; day += 1) {
                 for (String dayText : dayMap.keySet()) {
                     dayText = dayText.toUpperCase();
                     mDayTextPaint.getTextBounds(dayText, 0, dayText.length(), dayBounds);
-                    maxDayWidthPx = Math.max(maxDayWidthPx, dayBounds.width());
+                    maxDayBounds.left = Math.min(maxDayBounds.left, dayBounds.left);
+                    maxDayBounds.right = Math.max(maxDayBounds.right, dayBounds.right);
+                    maxDayBounds.top = Math.min(maxDayBounds.top, dayBounds.top);
+                    maxDayBounds.bottom = Math.max(maxDayBounds.bottom, dayBounds.bottom);
                 }
             }
 
-            float maxDateWidthPx = 0;
             for (int date = 1; date <= 31; date += 1) {
                 String dateText = Integer.toString(date);
                 mDateTextPaint.getTextBounds(dateText, 0, dateText.length(), dateBounds);
-                maxDateWidthPx = Math.max(maxDateWidthPx, dateBounds.width());
+                maxDateBounds.left = Math.min(maxDateBounds.left, dateBounds.left);
+                maxDateBounds.right = Math.max(maxDateBounds.right, dateBounds.right);
+                maxDateBounds.top = Math.min(maxDateBounds.top, dateBounds.top);
+                maxDateBounds.bottom = Math.max(maxDateBounds.bottom, dateBounds.bottom);
             }
 
             mDayDateTextSizePx = mSurfaceVminPx * mDayDateTextSizeVmin;
 
             /* 1 to 31, outer */
             float dateWindowRightXPx = mSurfaceCenterXPx + mClockDialRadiusPx * mDayDateOuterVmin;
-            float dateWindowLeftXPx = dateWindowRightXPx - maxDateWidthPx - mClockDialDiameterPx * 0.02f;
+            float dateWindowLeftXPx = dateWindowRightXPx - maxDateBounds.width() - mClockDialDiameterPx * 0.02f;
 
             /* SUN to SAT, inner */
             float dayWindowRightXPx = dateWindowLeftXPx - mClockDialDiameterPx * 0.01f;
-            float dayWindowLeftXPx = dayWindowRightXPx - maxDayWidthPx - mClockDialDiameterPx * 0.02f;
+            float dayWindowLeftXPx = dayWindowRightXPx - maxDayBounds.width() - mClockDialDiameterPx * 0.02f;
 
             mDayWindowCenterXPx = (dayWindowLeftXPx + dayWindowRightXPx) / 2f;
             mDateWindowCenterXPx = (dateWindowLeftXPx + dateWindowRightXPx) / 2f;
@@ -1444,11 +1451,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Rect dateBounds = new Rect();
             mDateTextPaint.getTextBounds(dateText, 0, dateText.length(), dateBounds);
 
-            float dayY = mSurfaceCenterYPx + dayBounds.height() / 2 - dayBounds.bottom;
-            float dateY = mSurfaceCenterYPx + dateBounds.height() / 2 - dateBounds.bottom;
+            float baselineY = mSurfaceCenterXPx + 0.35f * mDayDateTextSizePx;
 
-            canvas.drawText(dayText, mDayWindowCenterXPx, dayY, mDayTextPaint);
-            canvas.drawText(dateText, mDateWindowCenterXPx, dateY, mDateTextPaint);
+            canvas.drawText(dayText, mDayWindowCenterXPx, baselineY, mDayTextPaint);
+            canvas.drawText(dateText, mDateWindowCenterXPx, baselineY, mDateTextPaint);
         }
 
         private void drawWatchFace(Canvas canvas) {
