@@ -96,7 +96,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         BEZEL_NONE,
         BEZEL_SLIDE_RULE,
         BEZEL_TACHYMETER
-    };
+    }
 
     private class Engine extends CanvasWatchFaceService.Engine {
         private static final String TAG = "PilotWatchFace";
@@ -123,7 +123,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private int mMinuteHandColor;
         private int mSecondHandColor;
         private int mTickColor;
-        
+
+        private BezelType bezelType = BezelType.BEZEL_NONE;
+        private float slideRuleDiameter = 0.8f;
+        private float tachymeterDiameter = 0.9f;
+
         // watch canvas/surface
         private float mSurfaceCenterXPx;
         private float mSurfaceCenterYPx;
@@ -593,7 +597,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 float y1 = centerYPx - outerDiameter * watchDial.radiusPx;
                 float y2 = centerYPx - innerDiameter * watchDial.radiusPx;
 
-                tick:
+                  tick:
                 for (int i = 0; i <= numberOfTicks; i += 1) {
                     for (int n : excludeNumberOfTicks) {
                         if ((i * n) % numberOfTicks == 0) {
@@ -1168,9 +1172,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             mZoomOnSubDial4 = false;
 
-//            mDiameterPx = Math.min(width, height);
-//            mRadiusPx = mDiameterPx / 2f;
-
             mSurfaceCenterXPx = width / 2f;
             mSurfaceCenterYPx = height / 2f;
             mSurfaceWidthPx = width;
@@ -1180,7 +1181,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mDialDiameterPx = mSurfaceVminPx - MINIMUM_STROKE_WIDTH_PX;
             mDialRadiusPx = mDialDiameterPx / 2;
 
-            mClockDialDiameterPx = mDialDiameterPx * 0.80f;
+            switch (bezelType) {
+                case BEZEL_SLIDE_RULE:
+                    mClockDialDiameterPx = mDialDiameterPx * slideRuleDiameter;
+                    break;
+                case BEZEL_TACHYMETER:
+                    mClockDialDiameterPx = mDialDiameterPx * tachymeterDiameter;
+                    break;
+                default:
+                    mClockDialDiameterPx = mDialDiameterPx;
+            }
             mClockDialRadiusPx = mClockDialDiameterPx / 2;
 
             mDayTextPaint = new Paint();
@@ -1209,6 +1219,113 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
+        private void drawBezel(Canvas canvas, Boolean ambient) {
+            switch (bezelType) {
+                case BEZEL_SLIDE_RULE:
+                    drawSlideRuleBezel(canvas, ambient);
+                    break;
+                case BEZEL_TACHYMETER:
+                    drawTachymeterBezel(canvas, ambient);
+                    break;
+            }
+        }
+
+        private void drawSlideRuleTick(Canvas canvas, Boolean ambient, float x, float y, Paint paint) {
+            float degrees = MoreMath.mod((float)Math.log10(x), 1.0f) * 360f;
+            canvas.save();
+            canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
+
+            float yc = mSurfaceCenterYPx - mDialRadiusPx * (1 + slideRuleDiameter) / 2;
+            float y1 = yc + mDialRadiusPx * y * (1 - slideRuleDiameter) / 2;
+            float y2 = yc - mDialRadiusPx * y * (1 - slideRuleDiameter) / 2;
+
+            canvas.drawLine(
+                    mSurfaceCenterXPx, y1,
+                    mSurfaceCenterXPx, y2,
+                    paint);
+            canvas.restore();
+        }
+
+        private void drawTachymeterTick(Canvas canvas, Boolean ambient, float x, float y, Paint paint) {
+            /* 60 => 360 */
+            /* 120 => 180 */
+            /* 240 => 90 */
+            float degrees = 360f * 60f / x;
+            canvas.save();
+            canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
+
+            float y1 = mSurfaceCenterYPx - mDialRadiusPx * tachymeterDiameter;
+            float y2 = y1 - mDialRadiusPx * y * (1 - tachymeterDiameter);
+
+            canvas.drawLine(
+                    mSurfaceCenterXPx, y1,
+                    mSurfaceCenterXPx, y2,
+                    paint);
+            canvas.restore();
+        }
+
+        private void drawSlideRuleBezel(Canvas canvas, Boolean ambient) {
+            Paint paint = new Paint();
+            paint.setAntiAlias(true);
+            paint.setColor(ambient ? Color.WHITE : mTickColor);
+            paint.setStrokeWidth(MINIMUM_STROKE_WIDTH_PX);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeCap(Paint.Cap.BUTT);
+
+            canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx, paint);
+            canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx * (1 + slideRuleDiameter) / 2, paint);
+
+            int i;
+            for (i = 1000; i < 2500; i += 100) {
+                drawSlideRuleTick(canvas, ambient, i, 0.5f, paint);
+            }
+            for (i = 1000; i < 2500; i += 20) {
+                drawSlideRuleTick(canvas, ambient, i, 0.25f, paint);
+            }
+            for (i = 2500; i < 5000; i += 250) {
+                drawSlideRuleTick(canvas, ambient, i, 0.5f, paint);
+            }
+            for (i = 2500; i < 5000; i += 50) {
+                drawSlideRuleTick(canvas, ambient, i, 0.25f, paint);
+            }
+            for (i = 5000; i < 10000; i += 500) {
+                drawSlideRuleTick(canvas, ambient, i, 0.5f ,paint);
+            }
+            for (i = 5000; i < 10000; i += 100) {
+                drawSlideRuleTick(canvas, ambient, i, 0.25f ,paint);
+            }
+        }
+
+        private void drawTachymeterBezel(Canvas canvas, Boolean ambient) {
+            Paint paint = new Paint();
+            paint.setAntiAlias(true);
+            paint.setColor(ambient ? Color.WHITE : mTickColor);
+            paint.setStrokeWidth(MINIMUM_STROKE_WIDTH_PX);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeCap(Paint.Cap.BUTT);
+
+            canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx, paint);
+
+            int i;
+            for (i = 60; i <= 80; i += 1) {
+                drawTachymeterTick(canvas, ambient, i, 0.5f, paint);
+            }
+            for (i = 80; i <= 120; i += 1) {
+                drawTachymeterTick(canvas, ambient, i, 0.5f, paint);
+            }
+            drawTachymeterTick(canvas, ambient, 135, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 150, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 175, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 200, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 250, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 300, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 400, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 500, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 600, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 750, 0.5f, paint);
+            drawTachymeterTick(canvas, ambient, 1000, 0.5f, paint);
+        }
+
         private void initBackgroundBitmap() {
             mBackgroundBitmap = Bitmap.createBitmap(mSurfaceWidthPx, mSurfaceHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmap);
@@ -1218,6 +1335,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial2.draw(backgroundCanvas, false);
             mSubDial3.draw(backgroundCanvas, false);
             mSubDial4.draw(backgroundCanvas, false);
+            drawBezel(backgroundCanvas, false);
         }
 
         private void initBackgroundBitmapZoomSubDial4() {
@@ -1230,6 +1348,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial2.draw(backgroundCanvas, false);
             mSubDial3.draw(backgroundCanvas, false);
             mSubDial4.draw(backgroundCanvas, false);
+            drawBezel(backgroundCanvas, false);
         }
 
         private void initAmbientBackgroundBitmap() {
@@ -1241,6 +1360,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial2.draw(backgroundCanvas, true);
             mSubDial3.draw(backgroundCanvas, true);
             mSubDial4.draw(backgroundCanvas, true);
+            drawBezel(backgroundCanvas, true);
         }
 
         private void drawClockDial(Canvas canvas, boolean ambient) {
