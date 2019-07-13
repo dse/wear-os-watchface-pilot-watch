@@ -1048,7 +1048,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         /* battery percentage */
-        private void initSubDial4() {
+        private void initBatterySubDial() {
             mBatterySubDial = new WatchDial(this);
             mBatterySubDial.diameterVmin = 0.6f;
             mBatterySubDial.centerXVmin = 0.125f;
@@ -1097,7 +1097,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             initSubDial1();
             initSubDial2();
             initSubDial3();
-            initSubDial4();
+            initBatterySubDial();
         }
 
         private void initHands() {
