@@ -98,6 +98,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         BEZEL_TACHYMETER
     }
 
+    enum WatchDialTextDirection {
+        TEXT_DIRECTION_HORIZONTAL,
+        TEXT_DIRECTION_TANGENTIAL,
+        TEXT_DIRECTION_RADIAL
+    }
+
+    private static final float TEXT_CAP_HEIGHT = 0.7f;
+
     private class Engine extends CanvasWatchFaceService.Engine {
         private static final String TAG = "PilotWatchFace";
 
@@ -232,6 +240,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public float darkOpacity = 0f;
 
+            public WatchDialTextDirection textDirection = WatchDialTextDirection.TEXT_DIRECTION_HORIZONTAL;
+
             private float radiusPx;
             private float centerXPx;
             private float centerYPx;
@@ -298,7 +308,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                             break;
                         }
                         angle += 90f;                                  // e.g., 36 => 126
-                        angle = (float) Math.floor(angle / 90f) * 90f;  // e.g., 126 => 90
+                        angle = (float) Math.floor(angle / 90f) * 90f; // e.g., 126 => 90
                         angle = Math.min(angle, maxAngle);
                     }
                 }
@@ -364,6 +374,40 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
 
+            public float ticksInner() {
+                if (tickSets == null || tickSets.isEmpty()) {
+                    return 1.0f;
+                }
+                float result = 1.0f;
+                boolean isFirst = true;
+                for (WatchDialTickSet tickSet : tickSets) {
+                    if (isFirst) {
+                        result = tickSet.innerDiameter;
+                    } else {
+                        result = Math.min(result, tickSet.innerDiameter);
+                    }
+                    isFirst = false;
+                }
+                return result;
+            }
+
+            public float ticksOuter() {
+                if (tickSets == null || tickSets.isEmpty()) {
+                    return 1.0f;
+                }
+                float result = 1.0f;
+                boolean isFirst = true;
+                for (WatchDialTickSet tickSet : tickSets) {
+                    if (isFirst) {
+                        result = tickSet.outerDiameter;
+                    } else {
+                        result = Math.max(result, tickSet.outerDiameter);
+                    }
+                    isFirst = false;
+                }
+                return result;
+            }
+
             public float getCircleStrokeWidth() {
                 Engine engine = engineWeakReference.get();
                 if (circleStrokeWidthVmin != 0f) {
@@ -416,6 +460,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
 
+            private static final float TEXT_ROTATION_FUDGE_FACTOR = 1f;
+
             public void drawText(Canvas canvas, Boolean ambient) {
                 drawText(canvas, ambient, false);
             }
@@ -424,11 +470,19 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 if (isShadow && (ambient || (shadowDXPx == 0 && shadowDYPx == 0))) {
                     return;
                 }
+                if (textPairs == null || textPairs.isEmpty()) {
+                    return;
+                }
 
                 Engine engine = engineWeakReference.get();
 
+                float scale = getResources().getDisplayMetrics().density;
+                float spacePx = 4 * scale; /* 4dp */
+
                 float centerXPx = this.centerXPx + (isShadow ? shadowDXPx : 0);
                 float centerYPx = this.centerYPx + (isShadow ? shadowDYPx : 0);
+                float textSizePx = engine.getClockDialTextSizePx(textSizeVmin);
+                float ticksInner = this.ticksInner();
 
                 Paint textPaint = new Paint();
                 textPaint.setTypeface(mTypeface);
@@ -437,23 +491,59 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 } else {
                     textPaint.setColor(Color.WHITE);
                 }
-                textPaint.setTextSize(engine.getClockDialTextSizePx(textSizeVmin));
+                textPaint.setTextSize(textSizePx);
                 textPaint.setAntiAlias(true);
-                textPaint.setTextAlign(Paint.Align.CENTER);
                 textPaint.setStyle(Paint.Style.FILL);
 
-                if (textPairs != null) {
-                    for (Pair<Float, String> textPair : textPairs) {
-                        float rotation = textPair.first;
-                        float angle = getCanvasRotationAngle(rotation);
-                        String text = textPair.second;
+                for (Pair<Float, String> textPair : textPairs) {
+                    float rotation = textPair.first;
+                    float angle = getCanvasRotationAngle(rotation);
+                    String text = textPair.second;
 
-                        canvas.save();
-                        canvas.rotate(angle, centerXPx, centerYPx);
-                        canvas.rotate(-angle, centerXPx, centerYPx - radiusPx * 0.6f);
-                        drawVerticallyCenteredText(canvas, text, centerXPx, centerYPx - radiusPx * 0.6f, textPaint);
-                        canvas.restore();
+                    float textYPx = centerYPx - radiusPx * 0.6f; /* initialize for TEXT_DIRECTION_HORIZONTAL */
+                    switch (textDirection) {
+                        case TEXT_DIRECTION_TANGENTIAL:
+                            textYPx = centerYPx - radiusPx * ticksInner + textSizePx * TEXT_CAP_HEIGHT / 2f + spacePx;
+                            break;
+                        case TEXT_DIRECTION_RADIAL:
+                            textYPx = centerYPx - radiusPx * ticksInner + spacePx;
+                            break;
                     }
+
+                    float textAngle = 0f; /* initialize for TEXT_DIRECTION_HORIZONTAL */
+                    Paint.Align textAlign = Paint.Align.CENTER;
+                    switch (textDirection) {
+                        case TEXT_DIRECTION_TANGENTIAL:
+                            textAngle = MoreMath.mod(angle, 360f);
+                            break;
+                        case TEXT_DIRECTION_RADIAL:
+                            textAngle = MoreMath.mod(angle + 90f, 360f);
+                            break;
+                    }
+                    if (textAngle != 0f) {
+                        if (textDirection == WatchDialTextDirection.TEXT_DIRECTION_RADIAL) {
+                            textAlign = Paint.Align.RIGHT;
+                        }
+                        if (textAngle >= (90f + TEXT_ROTATION_FUDGE_FACTOR) &&
+                                textAngle <= (270f - TEXT_ROTATION_FUDGE_FACTOR)) {
+                            textAngle = MoreMath.mod(textAngle + 180f, 360f);
+                            if (textDirection == WatchDialTextDirection.TEXT_DIRECTION_TANGENTIAL) {
+                                textAlign = Paint.Align.LEFT;
+                            }
+                        }
+                    }
+
+                    textPaint.setTextAlign(textAlign);
+
+                    Rect bounds = new Rect();
+                    textPaint.getTextBounds(text, 0, text.length(), bounds);
+
+                    canvas.save();
+                    canvas.rotate(angle, centerXPx, centerYPx);
+                    canvas.rotate(-angle, centerXPx, textYPx); /* initialize for TEXT_DIRECTION_HORIZONTAL */
+                    canvas.rotate(textAngle, centerXPx, textYPx);
+                    drawVerticallyCenteredText(canvas, text, centerXPx, textYPx, textPaint);
+                    canvas.restore();
                 }
             }
 
@@ -973,7 +1063,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial4.circleStrokeWidthVmin = 0.0025f;
             mSubDial4.addText(0.00f, "0%");
             mSubDial4.addText(1.00f, "100%");
-            mSubDial4.textSizeVmin = 0.8f * DEFAULT_TEXT_SIZE_VMIN;
+            mSubDial4.textDirection = WatchDialTextDirection.TEXT_DIRECTION_RADIAL;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mSubDial4);
             tickSet1.numberOfTicks = 2;
@@ -1231,7 +1321,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void drawSlideRuleTick(Canvas canvas, Boolean ambient, float x, float y, Paint paint) {
-            float degrees = MoreMath.mod((float)Math.log10(x), 1.0f) * 360f;
+            float degrees = MoreMath.mod((float) Math.log10(x), 1.0f) * 360f;
             canvas.save();
             canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
 
@@ -1289,10 +1379,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 drawSlideRuleTick(canvas, ambient, i, 0.25f, paint);
             }
             for (i = 5000; i < 10000; i += 500) {
-                drawSlideRuleTick(canvas, ambient, i, 0.5f ,paint);
+                drawSlideRuleTick(canvas, ambient, i, 0.5f, paint);
             }
             for (i = 5000; i < 10000; i += 100) {
-                drawSlideRuleTick(canvas, ambient, i, 0.25f ,paint);
+                drawSlideRuleTick(canvas, ambient, i, 0.25f, paint);
             }
         }
 
@@ -1472,7 +1562,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             float watchFaceNameXPx = mSurfaceCenterXPx - mClockDialDiameterPx * mWatchFaceNameLeftOffsetVmin;
             float watchFaceNameYPx = mSurfaceCenterYPx - mClockDialDiameterPx * mWatchFaceNameTopOffsetVmin;
-            watchFaceNameYPx -= 0.65 * getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
+            watchFaceNameYPx -= (1f - TEXT_CAP_HEIGHT / 2) * getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
 
             canvas.drawText("PILOT", watchFaceNameXPx + dx, watchFaceNameYPx + dy, textPaint);
             watchFaceNameYPx += getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
@@ -1573,7 +1663,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Rect dateBounds = new Rect();
             mDateTextPaint.getTextBounds(dateText, 0, dateText.length(), dateBounds);
 
-            float baselineY = mSurfaceCenterXPx + 0.35f * mDayDateTextSizePx;
+            float baselineY = mSurfaceCenterXPx + mDayDateTextSizePx * TEXT_CAP_HEIGHT / 2;
 
             canvas.drawText(dayText, mDayWindowCenterXPx, baselineY, mDayTextPaint);
             canvas.drawText(dateText, mDateWindowCenterXPx, baselineY, mDateTextPaint);
@@ -1837,8 +1927,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
     }
 
     private void drawVerticallyCenteredText(Canvas canvas, String text, float x, float y, Paint paint) {
-        final Rect bounds = new Rect();
-        paint.getTextBounds(text, 0, text.length(), bounds);
-        canvas.drawText(text, x, y - (bounds.bottom + bounds.top) / 2f, paint);
+        canvas.drawText(text, x, y + paint.getTextSize() * TEXT_CAP_HEIGHT / 2, paint);
     }
 }
