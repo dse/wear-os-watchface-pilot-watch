@@ -169,7 +169,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private WatchDial mSubDial1;
         private WatchDial mSubDial2;
         private WatchDial mSubDial3;
-        private WatchDial mSubDial4;
+        private WatchDial mBatterySubDial;
 
         private WatchHand mHourHand;
         private WatchHand mMinuteHand;
@@ -1049,36 +1049,36 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         /* battery percentage */
         private void initSubDial4() {
-            mSubDial4 = new WatchDial(this);
-            mSubDial4.diameterVmin = 0.6f;
-            mSubDial4.centerXVmin = 0.125f;
-            mSubDial4.centerYVmin = 0f;
-            mSubDial4.nonAmbientOnly = false;
-            mSubDial4.startAngle = 150f;
-            mSubDial4.endAngle = 30f;
-            mSubDial4.excludeTicksFrom = 0.4f;
-            mSubDial4.excludeTicksTo = 0.6f;
-            mSubDial4.circle1Diameter = 1f;
-            mSubDial4.circle2Diameter = 0.92f;
-            mSubDial4.circleStrokeWidthVmin = 0.0025f;
-            mSubDial4.addText(0.00f, "0%");
-            mSubDial4.addText(1.00f, "100%");
-            mSubDial4.textDirection = WatchDialTextDirection.TEXT_DIRECTION_RADIAL;
+            mBatterySubDial = new WatchDial(this);
+            mBatterySubDial.diameterVmin = 0.6f;
+            mBatterySubDial.centerXVmin = 0.125f;
+            mBatterySubDial.centerYVmin = 0f;
+            mBatterySubDial.nonAmbientOnly = false;
+            mBatterySubDial.startAngle = 150f;
+            mBatterySubDial.endAngle = 30f;
+            mBatterySubDial.excludeTicksFrom = 0.4f;
+            mBatterySubDial.excludeTicksTo = 0.6f;
+            mBatterySubDial.circle1Diameter = 1f;
+            mBatterySubDial.circle2Diameter = 0.92f;
+            mBatterySubDial.circleStrokeWidthVmin = 0.0025f;
+            mBatterySubDial.addText(0.00f, "0%");
+            mBatterySubDial.addText(1.00f, "100%");
+            mBatterySubDial.textDirection = WatchDialTextDirection.TEXT_DIRECTION_RADIAL;
 
-            WatchDialTickSet tickSet1 = new WatchDialTickSet(mSubDial4);
+            WatchDialTickSet tickSet1 = new WatchDialTickSet(mBatterySubDial);
             tickSet1.numberOfTicks = 2;
             tickSet1.outerDiameter = 1f;
             tickSet1.innerDiameter = 0.80f;
             tickSet1.strokeWidthVmin = 0.01f;
             tickSet1.nonAmbientOnly = false;
-            WatchDialTickSet tickSet2 = new WatchDialTickSet(mSubDial4);
+            WatchDialTickSet tickSet2 = new WatchDialTickSet(mBatterySubDial);
             tickSet2.numberOfTicks = 10;
             tickSet2.outerDiameter = 1f;
             tickSet2.innerDiameter = 0.86f;
             tickSet2.strokeWidthVmin = 0.005f;
             tickSet2.nonAmbientOnly = false;
             tickSet2.excludeTicks(tickSet1);
-            WatchDialTickSet tickSet3 = new WatchDialTickSet(mSubDial4);
+            WatchDialTickSet tickSet3 = new WatchDialTickSet(mBatterySubDial);
             tickSet3.numberOfTicks = 20;
             tickSet3.outerDiameter = 1f;
             tickSet3.innerDiameter = 0.92f;
@@ -1087,9 +1087,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             tickSet3.excludeTicks(tickSet1);
             tickSet3.excludeTicks(tickSet2);
 
-            mSubDial4.addTickSet(tickSet1);
-            mSubDial4.addTickSet(tickSet2);
-            mSubDial4.addTickSet(tickSet3);
+            mBatterySubDial.addTickSet(tickSet1);
+            mBatterySubDial.addTickSet(tickSet2);
+            mBatterySubDial.addTickSet(tickSet3);
         }
 
         private void initDials() {
@@ -1157,7 +1157,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mHourHand.widthVmin = 0.02f;
             mHourHand.shadowRadiusPx = 4f;
 
-            mBatteryHand = new WatchHand(mSubDial4);
+            mBatteryHand = new WatchHand(mBatterySubDial);
             mBatteryHand.color = mSecondHandColor;
             mBatteryHand.nonAmbientOnly = false;
             mBatteryHand.hasArrowHead = true;
@@ -1172,7 +1172,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial1.update();
             mSubDial2.update();
             mSubDial3.update();
-            mSubDial4.update();
+            mBatterySubDial.update();
         }
 
         private void updateHands() {
@@ -1424,7 +1424,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial1.draw(backgroundCanvas, false);
             mSubDial2.draw(backgroundCanvas, false);
             mSubDial3.draw(backgroundCanvas, false);
-            mSubDial4.draw(backgroundCanvas, false);
+            mBatterySubDial.draw(backgroundCanvas, false);
             drawBezel(backgroundCanvas, false);
         }
 
@@ -1437,7 +1437,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial1.draw(backgroundCanvas, false);
             mSubDial2.draw(backgroundCanvas, false);
             mSubDial3.draw(backgroundCanvas, false);
-            mSubDial4.draw(backgroundCanvas, false);
+            mBatterySubDial.draw(backgroundCanvas, false);
             drawBezel(backgroundCanvas, false);
         }
 
@@ -1449,7 +1449,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSubDial1.draw(backgroundCanvas, true);
             mSubDial2.draw(backgroundCanvas, true);
             mSubDial3.draw(backgroundCanvas, true);
-            mSubDial4.draw(backgroundCanvas, true);
+            mBatterySubDial.draw(backgroundCanvas, true);
             drawBezel(backgroundCanvas, true);
         }
 
@@ -1597,7 +1597,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                         } else if (mSubDial3.contains(x, y) && mEmulatorMode) {
                             mDemoTimeMode = !mDemoTimeMode;
                             updateTimer();
-                        } else if (mSubDial4.contains(x, y)) {
+                        } else if (mBatterySubDial.contains(x, y)) {
                             mZoomOnSubDial4 = true;
                             updateTimer();
                         }
