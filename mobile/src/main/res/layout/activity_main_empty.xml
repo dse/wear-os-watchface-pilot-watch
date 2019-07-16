@@ -55,5 +55,19 @@
             android:textAppearance="@android:style/TextAppearance.Material.Body1"
             android:textColor="#ffffffff" />
 
+        <TextView
+            android:id="@+id/versionNumberTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@null"
+            android:editable="false"
+            android:ems="10"
+            android:gravity="right"
+            android:inputType="none"
+            android:text="TextView"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:textColor="#ffffffff" />
+
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

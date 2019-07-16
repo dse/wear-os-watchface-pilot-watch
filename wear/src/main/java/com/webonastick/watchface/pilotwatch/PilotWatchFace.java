@@ -14,6 +14,8 @@ package com.webonastick.watchface.pilotwatch;
  * - Pct means Percentage.
  */
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -46,6 +48,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+
+import static android.app.AlarmManager.RTC_WAKEUP;
 
 public class PilotWatchFace extends CanvasWatchFaceService {
 
@@ -138,9 +142,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private int mSecondHandColor;
         private int mTickColor;
 
-        private BezelType bezelType = BezelType.BEZEL_TACHYMETER;
-        private float slideRuleDiameter = 0.8f;
-        private float tachymeterDiameter = 0.9f;
+        private BezelType mBezelType = BezelType.BEZEL_NONE;
+        private float mSlideRuleDiameter = 0.8f;
+        private float mTachymeterDiameter = 0.9f;
 
         // watch canvas/surface
         private float mSurfaceCenterXPx;
@@ -213,9 +217,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private Paint mDayTextPaint;
         private Paint mDateTextPaint;
 
-        private boolean stopwatchRunning = false;
-        private long stopwatchStartTimeMs = 0;
-        private long stopwatchTimeMs = 0;
+        private boolean mStopwatchRunning = false;
+        private boolean mStopwatchPaused = false;
+        private long mStopwatchStartTimeMs = 0;
+        private long mStopwatchTimeMs = 0;
+        private boolean mAmbientStopwatch = false;
 
         /**
          * For keeping the watch face on longer than the standard
@@ -241,6 +247,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float circle1Diameter = 0f;
             public float circle2Diameter = 0f;
             public float circleStrokeWidthVmin = 0f;
+            public boolean circlesNonAmbientOnly = true;
 
             /* { 0.25f, "3" }, { 0.5f, "6" }, { 0.5f, "9" }, ... */
             public ArrayList<Pair<Float, String>> textPairs = new ArrayList<Pair<Float, String>>();
@@ -436,6 +443,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             public void drawCircles(Canvas canvas, Boolean ambient, Boolean isShadow) {
                 if (isShadow && (ambient || (shadowDXPx == 0 && shadowDYPx == 0))) {
+                    return;
+                }
+                if (ambient && circlesNonAmbientOnly) {
                     return;
                 }
 
@@ -652,7 +662,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public int numberOfTicks = 4;
             public float outerDiameter = 1.0f;
             public float innerDiameter = 0.9f;
+            public float ambientOuterDiameter = -1;
+            public float ambientInnerDiameter = -1;
             public float strokeWidthVmin = 0.01f;
+            public float ambientStrokeWidthVmin = -1;
             public boolean nonAmbientOnly = false;
             public ArrayList<Integer> excludeNumberOfTicks = new ArrayList<Integer>();
 
@@ -670,6 +683,21 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
                 if (ambient && nonAmbientOnly) {
                     return;
+                }
+
+                float outerDiameter = this.outerDiameter;
+                float innerDiameter = this.innerDiameter;
+                float strokeWidthVmin = this.strokeWidthVmin;
+                if (ambient) {
+                    if (ambientInnerDiameter >= 0) {
+                        innerDiameter = ambientInnerDiameter;
+                    }
+                    if (ambientOuterDiameter >= 0) {
+                        outerDiameter = ambientOuterDiameter;
+                    }
+                    if (ambientStrokeWidthVmin >= 0) {
+                        strokeWidthVmin = ambientStrokeWidthVmin;
+                    }
                 }
 
                 float centerXPx = watchDial.centerXPx + (isShadow ? watchDial.shadowDXPx : 0);
@@ -926,17 +954,21 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mMainDial.circle1Diameter = 1.00f;
             mMainDial.circle2Diameter = 0.97f;
             mMainDial.circleStrokeWidthVmin = 0.0025f;
+            mMainDial.circlesNonAmbientOnly = false;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mMainDial);
             tickSet1.numberOfTicks = 12;
             tickSet1.outerDiameter = 0.97f;
             tickSet1.innerDiameter = 0.91f;
+//            tickSet1.ambientOuterDiameter = 1.00f;
+//            tickSet1.ambientInnerDiameter = 0.94f;
             tickSet1.strokeWidthVmin = 0.02f;
             tickSet1.nonAmbientOnly = false;
             WatchDialTickSet tickSet2 = new WatchDialTickSet(mMainDial);
             tickSet2.numberOfTicks = 60;
             tickSet2.outerDiameter = 1.00f;
             tickSet2.innerDiameter = 0.94f;
+//            tickSet2.ambientInnerDiameter = 0.97f;
             tickSet2.strokeWidthVmin = 0.005f;
             tickSet2.nonAmbientOnly = false;
             WatchDialTickSet tickSet3 = new WatchDialTickSet(mMainDial);
@@ -958,7 +990,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mTopSubDial.diameterVmin = 0.35f;
             mTopSubDial.centerXVmin = 0f;
             mTopSubDial.centerYVmin = -0.26f;
-            mTopSubDial.nonAmbientOnly = false;
+            mTopSubDial.nonAmbientOnly = true;
             mTopSubDial.circle1Diameter = 1f;
             mTopSubDial.circle2Diameter = 0.90f;
             mTopSubDial.circleStrokeWidthVmin = 0.0025f;
@@ -1077,13 +1109,17 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             tickSet1.numberOfTicks = 2;
             tickSet1.outerDiameter = 1f;
             tickSet1.innerDiameter = 0.80f;
+            tickSet1.ambientInnerDiameter = 0.86f;
             tickSet1.strokeWidthVmin = 0.01f;
+            tickSet1.ambientStrokeWidthVmin = 0.005f;
             tickSet1.nonAmbientOnly = false;
             WatchDialTickSet tickSet2 = new WatchDialTickSet(mBatterySubDial);
             tickSet2.numberOfTicks = 10;
             tickSet2.outerDiameter = 1f;
             tickSet2.innerDiameter = 0.86f;
+            tickSet2.ambientInnerDiameter = 0.90f;
             tickSet2.strokeWidthVmin = 0.005f;
+            tickSet2.ambientStrokeWidthVmin = 0.0025f;
             tickSet2.nonAmbientOnly = false;
             tickSet2.excludeTicks(tickSet1);
             WatchDialTickSet tickSet3 = new WatchDialTickSet(mBatterySubDial);
@@ -1091,7 +1127,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             tickSet3.outerDiameter = 1f;
             tickSet3.innerDiameter = 0.92f;
             tickSet3.strokeWidthVmin = 0.0025f;
-            tickSet3.nonAmbientOnly = false;
+            tickSet3.nonAmbientOnly = true;
             tickSet3.excludeTicks(tickSet1);
             tickSet3.excludeTicks(tickSet2);
 
@@ -1119,7 +1155,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             mChronographSecondHand = new WatchHand(mBottomSubDial);
             mChronographSecondHand.color = mSecondHandColor;
-            mChronographSecondHand.nonAmbientOnly = true;
+            mChronographSecondHand.nonAmbientOnly = false; /* can draw in ambient in certain situations */
             mChronographSecondHand.lengthPctRadius = 0.9f;
             mChronographSecondHand.lengthBehindPctRadius = 0.225f;
             mChronographSecondHand.widthVmin = 0.01f;
@@ -1127,7 +1163,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             mChronographMinuteHand = new WatchHand(mLeftSubDial);
             mChronographMinuteHand.color = mMinuteHandColor;
-            mChronographMinuteHand.nonAmbientOnly = true;
+            mChronographMinuteHand.nonAmbientOnly = false; /* can draw in ambient in certain situations */
             mChronographMinuteHand.hasArrowHead = true;
             mChronographMinuteHand.lengthPctRadius = 0.8f;
             mChronographMinuteHand.widthVmin = 0.01f;
@@ -1135,7 +1171,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             mChronographHourHand = new WatchHand(mLeftSubDial);
             mChronographHourHand.color = mHourHandColor;
-            mChronographHourHand.nonAmbientOnly = true;
+            mChronographHourHand.nonAmbientOnly = false; /* can draw in ambient in certain situations */
             mChronographHourHand.hasArrowHead = true;
             mChronographHourHand.lengthPctRadius = 0.8f * 0.6f;
             mChronographHourHand.widthVmin = 0.01f;
@@ -1143,7 +1179,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             mSecondHand = new WatchHand(mMainDial);
             mSecondHand.color = mSecondHandColor;
-            mSecondHand.nonAmbientOnly = true;
+            mSecondHand.nonAmbientOnly = false; /* can draw in ambient in certain situations */
             mSecondHand.lengthPctRadius = 0.95f;
             mSecondHand.lengthBehindPctRadius = 0.25f;
             mSecondHand.widthVmin = 0.01f;
@@ -1196,14 +1232,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         private void setUpdateRate() {
             if (mPutChronographSecondsOnSubDial) {
-                if (stopwatchRunning) {
+                if (mStopwatchRunning) {
                     mUpdateRateMs = 50;
                 } else {
                     // seconds for time of day is on main dial.
                     mUpdateRateMs = 200;
                 }
             } else {
-                if (stopwatchRunning) {
+                if (mStopwatchRunning) {
                     mUpdateRateMs = 50;
                 } else {
                     // seconds for time of day is on subdial; that
@@ -1217,6 +1253,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         public void onDestroy() {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
             super.onDestroy();
+            // FIXME: cancel any alarms
         }
 
         @Override
@@ -1239,15 +1276,15 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             if (mAmbient) {
                 mZoomOnSubDial4 = false;
-            }
-
-            updateDials();
-            updateHands();
-
-            /* Check and trigger whether or not timer should be running (only in active mode). */
-            updateTimer();
-
-            if (!mAmbient) {
+                updateDials();
+                updateHands();
+                initAmbientBackgroundBitmap();
+                startAmbientUpdates();
+            } else {
+                stopAmbientUpdates();
+                updateDials();
+                updateHands();
+                updateTimer();
                 clearIdle();
             }
         }
@@ -1279,12 +1316,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mDialDiameterPx = mSurfaceVminPx - MINIMUM_STROKE_WIDTH_PX;
             mDialRadiusPx = mDialDiameterPx / 2;
 
-            switch (bezelType) {
+            switch (mBezelType) {
                 case BEZEL_SLIDE_RULE:
-                    mClockDialDiameterPx = mDialDiameterPx * slideRuleDiameter;
+                    mClockDialDiameterPx = mDialDiameterPx * mSlideRuleDiameter;
                     break;
                 case BEZEL_TACHYMETER:
-                    mClockDialDiameterPx = mDialDiameterPx * tachymeterDiameter;
+                    mClockDialDiameterPx = mDialDiameterPx * mTachymeterDiameter;
                     break;
                 default:
                     mClockDialDiameterPx = mDialDiameterPx;
@@ -1318,7 +1355,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void drawBezel(Canvas canvas, Boolean ambient) {
-            switch (bezelType) {
+            switch (mBezelType) {
                 case BEZEL_SLIDE_RULE:
                     drawSlideRuleBezel(canvas, ambient);
                     break;
@@ -1337,9 +1374,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             canvas.save();
             canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
 
-            float yc = mSurfaceCenterYPx - mDialRadiusPx * (1 + slideRuleDiameter) / 2;
-            float y1 = yc + mDialRadiusPx * y * (1 - slideRuleDiameter) / 2;
-            float y2 = yc - mDialRadiusPx * y * (1 - slideRuleDiameter) / 2;
+            float yc = mSurfaceCenterYPx - mDialRadiusPx * (1 + mSlideRuleDiameter) / 2;
+            float y1 = yc + mDialRadiusPx * y * (1 - mSlideRuleDiameter) / 2;
+            float y2 = yc - mDialRadiusPx * y * (1 - mSlideRuleDiameter) / 2;
 
             canvas.drawLine(
                     mSurfaceCenterXPx, y1,
@@ -1361,8 +1398,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             canvas.save();
             canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
 
-            float y1 = mSurfaceCenterYPx - mDialRadiusPx * tachymeterDiameter;
-            float y2 = y1 - mDialRadiusPx * y * (1 - tachymeterDiameter);
+            float y1 = mSurfaceCenterYPx - mDialRadiusPx * mTachymeterDiameter;
+            float y2 = y1 - mDialRadiusPx * y * (1 - mTachymeterDiameter);
 
             canvas.drawLine(
                     mSurfaceCenterXPx, y1,
@@ -1380,7 +1417,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             paint.setStrokeCap(Paint.Cap.BUTT);
 
             canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx, paint);
-            canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx * (1 + slideRuleDiameter) / 2, paint);
+            canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx * (1 + mSlideRuleDiameter) / 2, paint);
+            canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx * mSlideRuleDiameter, paint);
 
             int i;
             for (i = 1000; i < 2500; i += 100) {
@@ -1463,6 +1501,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             paint.setStrokeCap(Paint.Cap.BUTT);
 
             canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx, paint);
+            canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx * mTachymeterDiameter, paint);
 
             if (false) {
                 int i;
@@ -1533,9 +1572,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Canvas backgroundCanvas = new Canvas(mAmbientBackgroundBitmap);
             drawClockDial(backgroundCanvas, true);
             mMainDial.draw(backgroundCanvas, true);
-            mTopSubDial.draw(backgroundCanvas, true);
-            mLeftSubDial.draw(backgroundCanvas, true);
-            mBottomSubDial.draw(backgroundCanvas, true);
+            if (mAmbientStopwatch && (mStopwatchRunning || mStopwatchPaused)) {
+                mTopSubDial.draw(backgroundCanvas, true);
+                mLeftSubDial.draw(backgroundCanvas, true);
+                mBottomSubDial.draw(backgroundCanvas, true);
+            }
             mBatterySubDial.draw(backgroundCanvas, true);
             drawBezel(backgroundCanvas, true);
         }
@@ -1643,11 +1684,15 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             textPaint.setTextSize(getClockDialTextSizePx(mWatchFaceNameTextSizeVmin));
             textPaint.setTypeface(mTypeface);
             textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setLetterSpacing(getClockDialTextSizePx(mWatchFaceNameTextSizeVmin) * 0.01f);
 
             float dx = isShadow ? 0f : 0f;
             float dy = isShadow ? 1f : 0f;
 
             float watchFaceNameXPx = mSurfaceCenterXPx - mClockDialDiameterPx * mWatchFaceNameLeftOffsetVmin;
+            if (ambient && mTopSubDial.nonAmbientOnly) {
+                watchFaceNameXPx = mSurfaceCenterXPx;
+            }
             float watchFaceNameYPx = mSurfaceCenterYPx - mClockDialDiameterPx * mWatchFaceNameTopOffsetVmin;
             watchFaceNameYPx -= (1f - TEXT_CAP_HEIGHT / 2) * getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
 
@@ -1713,16 +1758,15 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 zoomCanvas(canvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
             }
             drawDate(canvas);
-            if (!mAmbient) {
-                drawStopwatch(canvas);
-            }
+            drawStopwatch(canvas);
             drawBattery(canvas);
             drawWatchFace(canvas);
             if (mZoomOnSubDial4) {
                 canvas.restore();
             }
-
-            checkIdle();
+            if (!mAmbient) {
+                checkIdle();
+            }
         }
 
         private void drawBackground(Canvas canvas) {
@@ -1782,7 +1826,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             mHourHand.draw(canvas, hoursRotation);
             mMinuteHand.draw(canvas, minutesRotation);
-            mSecondHand.draw(canvas, secondsRotation);
+            if (!mAmbient) {
+                mSecondHand.draw(canvas, secondsRotation);
+            } else if (mAmbientUpdateRateSeconds == 1) {
+                mSecondHand.draw(canvas, secondsRotation);
+            }
         }
 
         private void drawBattery(Canvas canvas) {
@@ -1807,6 +1855,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void drawStopwatch(Canvas canvas) {
+            if (mAmbient && !mAmbientStopwatch) {
+                return;
+            }
+
             long totalMs = getStopwatchTimeMs();
 
             if (mDemoTimeMode) {
@@ -1818,10 +1870,24 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             final float minuteHandRotationDegrees = (totalMs % 3600000) / 3600000f;
             final float hourHandRotationDegrees = (totalMs % 43200000) / 43200000f;
 
-            mChronographHourHand.draw(canvas, hourHandRotationDegrees);
-            mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
-            mChronographSecondHand.draw(canvas, secondHandRotationDegrees);
-            mChronographSecondFractionHand.draw(canvas, millisecondHandRotationDegrees);
+            if (!mAmbient) {
+                mChronographHourHand.draw(canvas, hourHandRotationDegrees);
+                mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
+                mChronographSecondHand.draw(canvas, secondHandRotationDegrees);
+                mChronographSecondFractionHand.draw(canvas, millisecondHandRotationDegrees);
+            } else if (mAmbientStopwatch && (mStopwatchRunning || mStopwatchPaused)) {
+                if (mAmbientUpdateRateSeconds == 0) {
+                    mChronographHourHand.draw(canvas, hourHandRotationDegrees);
+                    mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
+                } else if (mAmbientUpdateRateSeconds == 1) {
+                    mChronographHourHand.draw(canvas, hourHandRotationDegrees);
+                    mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
+                    mChronographSecondHand.draw(canvas, secondHandRotationDegrees);
+                } else {
+                    mChronographHourHand.draw(canvas, hourHandRotationDegrees);
+                    mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
+                }
+            }
         }
 
         @Override
@@ -1859,7 +1925,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void stopwatchButton1() {
-            if (stopwatchRunning) {
+            if (mStopwatchRunning) {
                 pauseStopwatch();
             } else {
                 startStopwatch();
@@ -1867,41 +1933,42 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private void stopwatchButton2() {
-            if (!stopwatchRunning) {
+            if (!mStopwatchRunning) {
                 resetStopwatch();
             }
         }
 
         private void startStopwatch() {
-            if (!stopwatchRunning) {
-                stopwatchRunning = true;
-                stopwatchStartTimeMs = System.currentTimeMillis();
+            if (!mStopwatchRunning) {
+                mStopwatchStartTimeMs = System.currentTimeMillis();
             }
+            mStopwatchRunning = true;
+            mStopwatchPaused = false;
             setUpdateRate();
         }
 
         private void pauseStopwatch() {
-            if (stopwatchRunning) {
-                stopwatchRunning = false;
-                stopwatchTimeMs += System.currentTimeMillis() - stopwatchStartTimeMs;
+            if (mStopwatchRunning) {
+                mStopwatchTimeMs += System.currentTimeMillis() - mStopwatchStartTimeMs;
             }
+            mStopwatchRunning = false;
+            mStopwatchPaused = true;
             setUpdateRate();
         }
 
         private void resetStopwatch() {
-            if (stopwatchRunning) {
-                stopwatchRunning = false;
-            }
-            stopwatchStartTimeMs = 0;
-            stopwatchTimeMs = 0;
+            mStopwatchRunning = false;
+            mStopwatchPaused = false;
+            mStopwatchStartTimeMs = 0;
+            mStopwatchTimeMs = 0;
             setUpdateRate();
         }
 
         private long getStopwatchTimeMs() {
-            if (stopwatchRunning) {
-                return System.currentTimeMillis() - stopwatchStartTimeMs + stopwatchTimeMs;
+            if (mStopwatchRunning) {
+                return System.currentTimeMillis() - mStopwatchStartTimeMs + mStopwatchTimeMs;
             }
-            return stopwatchTimeMs;
+            return mStopwatchTimeMs;
         }
 
         /**
@@ -1931,6 +1998,98 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 long timeMs = System.currentTimeMillis();
                 long delayMs = mUpdateRateMs - (timeMs % mUpdateRateMs);
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
+            }
+        }
+
+        /**
+         * Ambient refresh rate.  If 0, system handles ambient refreshes.
+         */
+        private int mAmbientUpdateRateSeconds = 1;
+
+        private static final String AMBIENT_UPDATE_ACTION = "com.webonastick.watchface.pilotwatch.action.AMBIENT_UPDATE";
+        private Intent mAmbientUpdateIntent = null;
+        private PendingIntent mAmbientUpdatePendingIntent = null;
+        private BroadcastReceiver mAmbientUpdateBroadcastReceiver = null;
+        private AlarmManager mAmbientUpdateAlarmManager = null;
+        private IntentFilter mAmbientUpdateIntentFilter = null;
+        private boolean mAmbientUpdateReceiverRegistered = false;
+
+        private Handler mAmbientUpdateHandler = null;
+        private Runnable mAmbientUpdateRunnable = null;
+
+        /**
+         * Handle time updates in ambient mode.
+         */
+        private void handleAmbientUpdate() {
+            if (!mAmbient || mAmbientUpdateRateSeconds == 0) {
+                return;
+            }
+            if (mAmbientUpdateRateSeconds <= 5) {
+                if (mAmbientUpdateHandler == null) {
+                    mAmbientUpdateHandler = new Handler();
+                    mAmbientUpdateRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            invalidate();
+                            handleAmbientUpdate();
+                        }
+                    };
+                }
+                long timeMs = System.currentTimeMillis();
+                long delayMs = (mAmbientUpdateRateSeconds * 1000) - timeMs % (mAmbientUpdateRateSeconds * 1000);
+                long triggerTimeMs = timeMs + delayMs;
+                mAmbientUpdateHandler.postDelayed(mAmbientUpdateRunnable, delayMs);
+                return;
+            }
+
+            if (mAmbientUpdateAlarmManager == null) {
+                mAmbientUpdateAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                mAmbientUpdateIntent = new Intent(AMBIENT_UPDATE_ACTION);
+                mAmbientUpdatePendingIntent = PendingIntent.getBroadcast(
+                        getBaseContext(), 0, mAmbientUpdateIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                );
+                mAmbientUpdateBroadcastReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        invalidate();
+                        handleAmbientUpdate();
+                    }
+                };
+                mAmbientUpdateIntentFilter = new IntentFilter(AMBIENT_UPDATE_ACTION);
+            }
+            if (!mAmbientUpdateReceiverRegistered) {
+                PilotWatchFace.this.registerReceiver(mAmbientUpdateBroadcastReceiver, mAmbientUpdateIntentFilter);
+                mAmbientUpdateReceiverRegistered = true;
+            }
+
+            long timeMs = System.currentTimeMillis();
+            long delayMs = (mAmbientUpdateRateSeconds * 1000) - timeMs % (mAmbientUpdateRateSeconds * 1000);
+            long triggerTimeMs = timeMs + delayMs;
+            mAmbientUpdateAlarmManager.setExact(RTC_WAKEUP, triggerTimeMs, mAmbientUpdatePendingIntent);
+        }
+
+        private void startAmbientUpdates() {
+            if (!mAmbient || mAmbientUpdateRateSeconds == 0) {
+                return;
+            }
+            handleAmbientUpdate();
+        }
+
+        private void stopAmbientUpdates() {
+            if (!mAmbient || mAmbientUpdateRateSeconds == 0) {
+                return;
+            }
+            if (mAmbientUpdateRateSeconds <= 5) {
+                if (mAmbientUpdateHandler != null) {
+                    mAmbientUpdateHandler.removeCallbacks(mAmbientUpdateRunnable);
+                }
+            }
+            if (mAmbientUpdateAlarmManager != null) {
+                mAmbientUpdateAlarmManager.cancel(mAmbientUpdatePendingIntent);
+            }
+            if (mAmbientUpdateReceiverRegistered) {
+                PilotWatchFace.this.unregisterReceiver(mAmbientUpdateBroadcastReceiver);
+                mAmbientUpdateReceiverRegistered = false;
             }
         }
 
