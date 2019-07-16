@@ -103,7 +103,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         TEXT_DIRECTION_TANGENTIAL,
         TEXT_DIRECTION_RADIAL
     }
+    
+    enum SlideRuleDial {
+        SLIDE_RULE_DIAL_INNER,
+        SLIDE_RULE_DIAL_OUTER
+    }
 
+    private static final float TEXT_ROTATION_FUDGE_FACTOR = 1f;
     private static final float TEXT_CAP_HEIGHT = 0.7f;
 
     private class Engine extends CanvasWatchFaceService.Engine {
@@ -132,7 +138,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private int mSecondHandColor;
         private int mTickColor;
 
-        private BezelType bezelType = BezelType.BEZEL_NONE;
+        private BezelType bezelType = BezelType.BEZEL_TACHYMETER;
         private float slideRuleDiameter = 0.8f;
         private float tachymeterDiameter = 0.9f;
 
@@ -189,6 +195,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private float mWatchFaceNameTextSizeVmin = 0.04f;
         private float mWatchFaceNameLeftOffsetVmin = 0.26f;
         private float mWatchFaceNameTopOffsetVmin = 0.26f;
+        
+        private float mSlideRuleTextSizeVmin = 0.05f;
+        private float mTachymeterTextSizeVmin = 0.05f;
 
         private float mDayDateTextSizeVmin = 0.07f;
         private float mDayDateOuterVmin = 0.88f;
@@ -460,7 +469,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
 
-            private static final float TEXT_ROTATION_FUDGE_FACTOR = 1f;
 
             public void drawText(Canvas canvas, Boolean ambient) {
                 drawText(canvas, ambient, false);
@@ -1320,8 +1328,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
+        private float slideRuleDegrees(float x) {
+            return MoreMath.mod((float) Math.log10(x), 1.0f) * 360f;
+        }
+
         private void drawSlideRuleTick(Canvas canvas, Boolean ambient, float x, float y, Paint paint) {
-            float degrees = MoreMath.mod((float) Math.log10(x), 1.0f) * 360f;
+            float degrees = slideRuleDegrees(x);
             canvas.save();
             canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
 
@@ -1336,11 +1348,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             canvas.restore();
         }
 
+        private float tachymeterDegrees(float x) {
+            /* if x is 60, return [360] 0 */
+            /* if x is 240, return 90 */
+            /* if x is 120, return 180 */
+
+            return MoreMath.mod(60f / x, 1) * 360f;
+        }
+
         private void drawTachymeterTick(Canvas canvas, Boolean ambient, float x, float y, Paint paint) {
-            /* 60 => 360 */
-            /* 120 => 180 */
-            /* 240 => 90 */
-            float degrees = 360f * 60f / x;
+            float degrees = tachymeterDegrees(x);
             canvas.save();
             canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
 
@@ -1384,6 +1401,57 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             for (i = 5000; i < 10000; i += 100) {
                 drawSlideRuleTick(canvas, ambient, i, 0.25f, paint);
             }
+            
+            Paint textPaint = new Paint();
+            textPaint.setAntiAlias(true);
+            textPaint.setColor(ambient ? Color.WHITE : mTickColor);
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setTextSize(getClockDialTextSizePx(mSlideRuleTextSizeVmin));
+            textPaint.setStyle(Paint.Style.FILL);
+            textPaint.setTypeface(mTypeface);
+
+            int[] slideRulePoints = {10, 11, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90};
+            for (int point: slideRulePoints) {
+                drawSlideRuleText(canvas, ambient, point, Integer.toString(point), SlideRuleDial.SLIDE_RULE_DIAL_INNER, textPaint);
+                drawSlideRuleText(canvas, ambient, point, Integer.toString(point), SlideRuleDial.SLIDE_RULE_DIAL_OUTER, textPaint);
+            }
+        }
+        
+        private void drawSlideRuleText(Canvas canvas, Boolean ambient,
+                                       float x, String text,
+                                       SlideRuleDial slideRuleDial,
+                                       Paint textPaint) {
+            float degrees = slideRuleDegrees(x);
+            float radiusPx = mDialRadiusPx;
+            switch (slideRuleDial) {
+                case SLIDE_RULE_DIAL_INNER:
+                    radiusPx = mDialRadiusPx * 0.85f;
+                    break;
+                case SLIDE_RULE_DIAL_OUTER:
+                    radiusPx = mDialRadiusPx * 0.95f;
+                    break;
+            }
+            drawRoundDialText(canvas, ambient, degrees, text, radiusPx, textPaint);
+        }
+
+        private void drawTachymeterText(Canvas canvas, Boolean ambient, float x, String text, Paint textPaint) {
+            float degrees = tachymeterDegrees(x);
+            drawRoundDialText(canvas, ambient, degrees, text, mDialRadiusPx * 0.95f, textPaint);
+        }
+
+        private void drawRoundDialText(Canvas canvas, Boolean ambient,
+                                       float degrees, String text, float radiusPx,
+                                       Paint textPaint) {
+            canvas.save();
+            canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
+            float textXPx = mSurfaceCenterXPx;
+            float textYPx = mSurfaceCenterYPx - radiusPx;
+            if (degrees >= (90f + TEXT_ROTATION_FUDGE_FACTOR) &&
+                    degrees <= (270f - TEXT_ROTATION_FUDGE_FACTOR)) {
+                canvas.rotate(180f, textXPx, textYPx);
+            }
+            drawVerticallyCenteredText(canvas, text, textXPx, textYPx, textPaint);
+            canvas.restore();
         }
 
         private void drawTachymeterBezel(Canvas canvas, Boolean ambient) {
@@ -1396,24 +1464,43 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             canvas.drawCircle(mSurfaceCenterXPx, mSurfaceCenterYPx, mDialRadiusPx, paint);
 
-            int i;
-            for (i = 60; i <= 80; i += 1) {
-                drawTachymeterTick(canvas, ambient, i, 0.5f, paint);
+            if (false) {
+                int i;
+                for (i = 60; i <= 80; i += 1) {
+                    drawTachymeterTick(canvas, ambient, i, 0.5f, paint);
+                }
+                for (i = 80; i <= 120; i += 1) {
+                    drawTachymeterTick(canvas, ambient, i, 0.5f, paint);
+                }
+                drawTachymeterTick(canvas, ambient, 135, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 150, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 175, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 200, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 250, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 300, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 400, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 500, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 600, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 750, 0.5f, paint);
+                drawTachymeterTick(canvas, ambient, 1000, 0.5f, paint);
             }
-            for (i = 80; i <= 120; i += 1) {
-                drawTachymeterTick(canvas, ambient, i, 0.5f, paint);
+
+            Paint textPaint = new Paint();
+            textPaint.setAntiAlias(true);
+            textPaint.setColor(ambient ? Color.WHITE : mTickColor);
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setTextSize(getClockDialTextSizePx(mSlideRuleTextSizeVmin));
+            textPaint.setStyle(Paint.Style.FILL);
+            textPaint.setTypeface(mTypeface);
+
+            int[] points = {
+                    60, 62, 64, 66, 68, 70, 72, 75, 80, 85, 90, 100, 110, 120,
+                    135, 150, 175, 200, 240, 300, 400, 600, 1000
+            };
+
+            for (int point: points) {
+                drawTachymeterText(canvas, ambient, point, Integer.toString(point), textPaint);
             }
-            drawTachymeterTick(canvas, ambient, 135, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 150, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 175, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 200, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 250, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 300, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 400, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 500, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 600, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 750, 0.5f, paint);
-            drawTachymeterTick(canvas, ambient, 1000, 0.5f, paint);
         }
 
         private void initBackgroundBitmap() {
