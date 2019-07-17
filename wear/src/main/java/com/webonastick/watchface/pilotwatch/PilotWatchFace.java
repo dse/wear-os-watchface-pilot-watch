@@ -1682,7 +1682,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
             textPaint.setTextSize(getClockDialTextSizePx(mWatchFaceNameTextSizeVmin));
-            textPaint.setTypeface(mTypeface);
+            if (ambient && mTopSubDial.nonAmbientOnly) {
+                textPaint.setTypeface(mTypeface);
+            } else {
+                textPaint.setTypeface(mCondensedTypeface);
+            }
             textPaint.setTextAlign(Paint.Align.CENTER);
             textPaint.setLetterSpacing(getClockDialTextSizePx(mWatchFaceNameTextSizeVmin) * 0.01f);
 
@@ -2004,7 +2008,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         /**
          * Ambient refresh rate.  If 0, system handles ambient refreshes.
          */
-        private int mAmbientUpdateRateSeconds = 1;
+        private int mAmbientUpdateRateSeconds = 10;
 
         private static final String AMBIENT_UPDATE_ACTION = "com.webonastick.watchface.pilotwatch.action.AMBIENT_UPDATE";
         private Intent mAmbientUpdateIntent = null;
