@@ -9,6 +9,20 @@ Source code is on [GitHub](https://github.com/dse/wear-os-watchface-pilot-watch)
 
 <a target="_blank" href="https://play.google.com/store/apps/details?id=com.webonastick.watchface.pilotwatch&amp;pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1"><img width="162" height="62" alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png"></a>
 
+## Changes
+
+### v1.1.0 (upcoming)
+
+- Companion Android app for watch face installation on Android Wear 1.x watches.
+- 10-second ambient refresh.
+- Watch face displays its own name.
+- A few layout tweaks.
+- For bug reporting: tap the watch face name to show the version number.
+
+### v1.0.0
+
+- Initial Release
+
 ## License
 
 [GPL2](COPYING.txt)
