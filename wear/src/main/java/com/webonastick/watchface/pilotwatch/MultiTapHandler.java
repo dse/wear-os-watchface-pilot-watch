@@ -7,7 +7,7 @@ public class MultiTapHandler {
     // Windows default double-tap threshold.
     public static final int MULTI_TAP_THRESHOLD_MS = 500;
 
-    private int mClosed = false;
+    private boolean mClosed = false;
     private int mTapType = -1;
     private int mNumberOfTaps = -1;
     private Handler mHandler;
