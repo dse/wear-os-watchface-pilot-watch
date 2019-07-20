@@ -118,7 +118,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
     private static final float TEXT_ROTATION_FUDGE_FACTOR = 1f;
     private static final float TEXT_CAP_HEIGHT = 0.7f;
 
-    private class Engine extends CanvasWatchFaceService.Engine {
+    private class Engine extends CanvasWatchFaceService.Engine implements MultiTapEventHandler {
         private static final String TAG = "PilotWatchFace";
 
         /* Handler to update the time once a second in interactive mode. */
@@ -623,19 +623,19 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             public boolean isToTheRightOf(int x) {
-                return centerXPx - radiusPx > x;
+                return leftBoundaryPx > x;
             }
 
             public boolean isToTheLeftOf(int x) {
-                return centerXPx + radiusPx < x;
+                return rightBoundaryPx < x;
             }
 
             public boolean isAbove(int y) {
-                return centerYPx + radiusPx < y;
+                return bottomBoundaryPx < y;
             }
 
             public boolean isBelow(int y) {
-                return centerYPx - radiusPx > y;
+                return topBoundaryPx > y;
             }
 
             public float getCanvasRotationAngle(float rotation) {
@@ -926,6 +926,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onCreate(SurfaceHolder holder) {
+            cancelMultiTap();
+
             if (Build.MODEL.startsWith("sdk_") || Build.FINGERPRINT.contains("/sdk_")) {
                 mEmulatorMode = true;
             }
@@ -1264,6 +1266,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onDestroy() {
+            cancelMultiTap();
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
             super.onDestroy();
             // FIXME: cancel any alarms
@@ -1271,6 +1274,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onPropertiesChanged(Bundle properties) {
+            cancelMultiTap();
             super.onPropertiesChanged(properties);
             mLowBitAmbient = properties.getBoolean(PROPERTY_LOW_BIT_AMBIENT, false);
             mBurnInProtection = properties.getBoolean(PROPERTY_BURN_IN_PROTECTION, false);
@@ -1284,6 +1288,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onAmbientModeChanged(boolean inAmbientMode) {
+            cancelMultiTap();
             super.onAmbientModeChanged(inAmbientMode);
             mAmbient = inAmbientMode;
             if (mShowVersionNumber) {
@@ -1307,6 +1312,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onInterruptionFilterChanged(int interruptionFilter) {
+            cancelMultiTap();
             super.onInterruptionFilterChanged(interruptionFilter);
             boolean inMuteMode = (interruptionFilter == WatchFaceService.INTERRUPTION_FILTER_NONE);
 
@@ -1319,6 +1325,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            cancelMultiTap();
             super.onSurfaceChanged(holder, format, width, height);
 
             mZoomDayDate = false;
@@ -1851,24 +1858,41 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     break;
                 case TAP_TYPE_TAP:
                     if (mZoomDayDate) {
+                        cancelMultiTap();
                         mZoomDayDate = false;
                     } else {
                         if (mTopSubDial.contains(x, y)) {
+                            cancelMultiTap();
                             stopwatchButton1();
                             updateTimer();
                         } else if (mLeftSubDial.contains(x, y)) {
+                            cancelMultiTap();
                             stopwatchButton2();
                             updateTimer();
                         } else if (mBottomSubDial.contains(x, y) && mEmulatorMode) {
+                            cancelMultiTap();
                             mDemoTimeMode = !mDemoTimeMode;
                             updateTimer();
                         } else if (mBatterySubDial.contains(x, y)) {
+                            cancelMultiTap();
                             mZoomDayDate = true;
                             updateTimer();
                         } else if (mLeftSubDial.isBelow(y) && mTopSubDial.isToTheRightOf(x)) {
+                            cancelMultiTap();
                             mShowVersionNumber = !mShowVersionNumber;
                             mBackgroundBitmap2 = null;
                             invalidate();
+                        } else {
+                            if (
+                                    mLeftSubDial.isToTheLeftOf(x) &&
+                                            mBatterySubDial.isToTheRightOf(x) &&
+                                            mTopSubDial.isAbove(y) &&
+                                            mBottomSubDial.isBelow(y)
+                            ) {
+                                multiTapEvent(MULTI_TAP_TYPE_CENTER_OF_DIAL);
+                            } else {
+                                cancelMultiTap();
+                            }
                         }
                     }
                     break;
@@ -1876,6 +1900,25 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             invalidate();
             if (!mAmbient) {
                 clearIdle();
+            }
+        }
+
+        private final int MULTI_TAP_TYPE_CENTER_OF_DIAL = 1;
+
+        public void onMultiTapCommand(int type, int numberOfTaps) {
+            Log.d(TAG, String.format("onMultiTapCommand(%d, %d);", type, numberOfTaps));
+        }
+
+        private MultiTapHandler mMultiTapHandler = null;
+        private void multiTapEvent(int type) {
+            if (mMultiTapHandler == null) {
+                mMultiTapHandler = new MultiTapHandler(this);
+            }
+            mMultiTapHandler.onTapEvent(type);
+        }
+        private void cancelMultiTap() {
+            if (mMultiTapHandler != null) {
+                mMultiTapHandler.cancel();
             }
         }
 
@@ -2053,6 +2096,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onVisibilityChanged(boolean visible) {
+            cancelMultiTap();
             super.onVisibilityChanged(visible);
 
             if (visible) {
