@@ -1347,7 +1347,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mDayTextPaint.setAntiAlias(true);
             mDayTextPaint.setTextSize(getClockDialTextSizePx(mDayDateTextSizeVmin));
             mDayTextPaint.setColor(Color.BLACK);
-            mDayTextPaint.setTypeface(mCondensedTypeface);
             mDayTextPaint.setTextAlign(Paint.Align.CENTER);
 
             mDateTextPaint = new Paint();
@@ -1596,6 +1595,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             drawBezel(backgroundCanvas, true);
         }
 
+        private int mDayOfWeekFontStretch[] = {0, 0, 0, 0, 0, 0, 0, 0}; // 1 = MONDAY ... 7 = SUNDAY
+
         private void drawClockDial(Canvas canvas, boolean ambient) {
             canvas.drawColor(Color.WHITE);
 
@@ -1609,6 +1610,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Rect maxDateBounds = new Rect();
 
             Map<String, Integer> dayMap = mCalendar.getDisplayNames(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
+            mDayTextPaint.setTypeface(mCondensedTypeface);
             for (String dayText : dayMap.keySet()) {
                 dayText = dayText.toUpperCase();
                 mDayTextPaint.getTextBounds(dayText, 0, dayText.length(), dayBounds);
@@ -1616,6 +1618,19 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 maxDayBounds.right = Math.max(maxDayBounds.right, dayBounds.right);
                 maxDayBounds.top = Math.min(maxDayBounds.top, dayBounds.top);
                 maxDayBounds.bottom = Math.max(maxDayBounds.bottom, dayBounds.bottom);
+            }
+
+            mDayTextPaint.setTypeface(mTypeface);
+            for (String dayText : dayMap.keySet()) {
+                dayText = dayText.toUpperCase();
+                Integer dayNumber = dayMap.get(dayText);
+                if (dayNumber != null && (dayNumber >= 1 && dayNumber <= 7)) {
+                    mDayOfWeekFontStretch[dayNumber] = -1; /* condensed */
+                    mDayTextPaint.getTextBounds(dayText, 0, dayText.length(), dayBounds);
+                    if (dayBounds.width() <= maxDayBounds.width()) {
+                        mDayOfWeekFontStretch[dayNumber] = 0; /* normal */
+                    }
+                }
             }
 
             for (int date = 1; date <= 31; date += 1) {
@@ -1853,13 +1868,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             dayText = dayText.toUpperCase();
             String dateText = Integer.toString(date);
 
-            Rect dayBounds = new Rect();
-            mDayTextPaint.getTextBounds(dayText, 0, dayText.length(), dayBounds);
-            Rect dateBounds = new Rect();
-            mDateTextPaint.getTextBounds(dateText, 0, dateText.length(), dateBounds);
-
             float baselineY = mSurfaceCenterXPx + mDayDateTextSizePx * TEXT_CAP_HEIGHT / 2;
 
+            if (mDayOfWeekFontStretch[day] <= -1) {
+                mDayTextPaint.setTypeface(mCondensedTypeface);
+            } else {
+                mDayTextPaint.setTypeface(mTypeface);
+            }
             canvas.drawText(dayText, mDayWindowCenterXPx, baselineY, mDayTextPaint);
             canvas.drawText(dateText, mDateWindowCenterXPx, baselineY, mDateTextPaint);
         }
