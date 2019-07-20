@@ -339,7 +339,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 bottomBoundaryPx = Math.min(bottomBoundaryPx, engine.mSurfaceHeightPx);
             }
 
-            public void draw(Canvas canvas, Boolean ambient) {
+            public void draw(Canvas canvas, boolean ambient) {
                 Engine engine = engineWeakReference.get();
 
                 if (ambient && nonAmbientOnly) {
@@ -357,7 +357,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 drawText(canvas, ambient);
             }
 
-            public void drawOpaqueLayer(Canvas canvas, Boolean ambient) {
+            public void drawOpaqueLayer(Canvas canvas, boolean ambient) {
                 if (ambient) {
                     return;
                 }
@@ -372,11 +372,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 canvas.drawCircle(centerXPx, centerYPx, radiusPx, paint);
             }
 
-            public void drawTicks(Canvas canvas, Boolean ambient) {
+            public void drawTicks(Canvas canvas, boolean ambient) {
                 drawTicks(canvas, ambient, false);
             }
 
-            public void drawTicks(Canvas canvas, Boolean ambient, Boolean isShadow) {
+            public void drawTicks(Canvas canvas, boolean ambient, boolean isShadow) {
                 if (isShadow && (ambient || (shadowDXPx == 0 && shadowDYPx == 0))) {
                     return;
                 }
@@ -433,11 +433,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 return 0f;
             }
 
-            public void drawCircles(Canvas canvas, Boolean ambient) {
+            public void drawCircles(Canvas canvas, boolean ambient) {
                 drawCircles(canvas, ambient, false);
             }
 
-            public void drawCircles(Canvas canvas, Boolean ambient, Boolean isShadow) {
+            public void drawCircles(Canvas canvas, boolean ambient, boolean isShadow) {
                 if (isShadow && (ambient || (shadowDXPx == 0 && shadowDYPx == 0))) {
                     return;
                 }
@@ -475,11 +475,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
 
-            public void drawText(Canvas canvas, Boolean ambient) {
+            public void drawText(Canvas canvas, boolean ambient) {
                 drawText(canvas, ambient, false);
             }
 
-            public void drawText(Canvas canvas, Boolean ambient, Boolean isShadow) {
+            public void drawText(Canvas canvas, boolean ambient, boolean isShadow) {
                 if (isShadow && (ambient || (shadowDXPx == 0 && shadowDYPx == 0))) {
                     return;
                 }
@@ -559,7 +559,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
 
-            public void drawArc(Canvas canvas, float diameterVmin, Paint paint, Boolean isShadow) {
+            public void drawArc(Canvas canvas, float diameterVmin, Paint paint, boolean isShadow) {
                 float startAngle = this.startAngle;
                 float endAngle = this.endAngle;
                 if (startAngle > endAngle) {
@@ -683,11 +683,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 excludeNumberOfTicks.add(ts.numberOfTicks);
             }
 
-            public void draw(Canvas canvas, Boolean ambient) {
+            public void draw(Canvas canvas, boolean ambient) {
                 draw(canvas, ambient, false);
             }
 
-            public void draw(Canvas canvas, Boolean ambient, Boolean isShadow) {
+            public void draw(Canvas canvas, boolean ambient, boolean isShadow) {
                 WatchDial watchDial = watchDialWeakReference.get();
                 Engine engine = watchDial.engineWeakReference.get();
 
@@ -1368,7 +1368,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private void drawBezel(Canvas canvas, Boolean ambient) {
+        private void drawBezel(Canvas canvas, boolean ambient) {
             switch (mBezelType) {
                 case BEZEL_SLIDE_RULE:
                     drawSlideRuleBezel(canvas, ambient);
@@ -1383,7 +1383,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             return MoreMath.mod((float) Math.log10(x), 1.0f) * 360f;
         }
 
-        private void drawSlideRuleTick(Canvas canvas, Boolean ambient, float x, float y, Paint paint) {
+        private void drawSlideRuleTick(Canvas canvas, boolean ambient, float x, float y, Paint paint) {
             float degrees = slideRuleDegrees(x);
             canvas.save();
             canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
@@ -1407,7 +1407,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             return MoreMath.mod(60f / x, 1) * 360f;
         }
 
-        private void drawTachymeterTick(Canvas canvas, Boolean ambient, float x, float y, Paint paint) {
+        private void drawTachymeterTick(Canvas canvas, boolean ambient, float x, float y, Paint paint) {
             float degrees = tachymeterDegrees(x);
             canvas.save();
             canvas.rotate(degrees, mSurfaceCenterXPx, mSurfaceCenterYPx);
@@ -1422,7 +1422,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             canvas.restore();
         }
 
-        private void drawSlideRuleBezel(Canvas canvas, Boolean ambient) {
+        private void drawSlideRuleBezel(Canvas canvas, boolean ambient) {
             Paint paint = new Paint();
             paint.setAntiAlias(true);
             paint.setColor(ambient ? Color.WHITE : mTickColor);
@@ -1469,7 +1469,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private void drawSlideRuleText(Canvas canvas, Boolean ambient,
+        private void drawSlideRuleText(Canvas canvas, boolean ambient,
                                        float x, String text,
                                        SlideRuleDial slideRuleDial,
                                        Paint textPaint) {
@@ -1486,12 +1486,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             drawRoundDialText(canvas, ambient, degrees, text, radiusPx, textPaint);
         }
 
-        private void drawTachymeterText(Canvas canvas, Boolean ambient, float x, String text, Paint textPaint) {
+        private void drawTachymeterText(Canvas canvas, boolean ambient, float x, String text, Paint textPaint) {
             float degrees = tachymeterDegrees(x);
             drawRoundDialText(canvas, ambient, degrees, text, mDialRadiusPx * 0.95f, textPaint);
         }
 
-        private void drawRoundDialText(Canvas canvas, Boolean ambient,
+        private void drawRoundDialText(Canvas canvas, boolean ambient,
                                        float degrees, String text, float radiusPx,
                                        Paint textPaint) {
             canvas.save();
@@ -1506,7 +1506,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             canvas.restore();
         }
 
-        private void drawTachymeterBezel(Canvas canvas, Boolean ambient) {
+        private void drawTachymeterBezel(Canvas canvas, boolean ambient) {
             Paint paint = new Paint();
             paint.setAntiAlias(true);
             paint.setColor(ambient ? Color.WHITE : mTickColor);
@@ -1693,7 +1693,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             drawWatchFaceName(canvas, ambient, false);
         }
 
-        private void drawWatchFaceName(Canvas canvas, Boolean ambient, Boolean isShadow) {
+        private void drawWatchFaceName(Canvas canvas, boolean ambient, boolean isShadow) {
             if (isShadow && ambient) {
                 return;
             }
@@ -1704,7 +1704,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private Paint getWatchFaceNameTextPaint(Boolean ambient, Boolean isShadow) {
+        private Paint getWatchFaceNameTextPaint(boolean ambient, boolean isShadow) {
             Paint textPaint = new Paint();
             textPaint.setAntiAlias(true);
             if (ambient) {
@@ -1725,7 +1725,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             return textPaint;
         }
 
-        private void drawWatchFaceNameText(Canvas canvas, Boolean ambient, Boolean isShadow) {
+        private void drawWatchFaceNameText(Canvas canvas, boolean ambient, boolean isShadow) {
             float dx = isShadow ? 0f : 0f;
             float dy = isShadow ? 1f : 0f;
             float lineSpacingPx = getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
@@ -1745,7 +1745,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             canvas.drawText("3000", xPx, yPx, textPaint);
         }
 
-        private void drawWatchFaceVersionText(Canvas canvas, Boolean ambient, Boolean isShadow) {
+        private void drawWatchFaceVersionText(Canvas canvas, boolean ambient, boolean isShadow) {
             try {
                 PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
 
