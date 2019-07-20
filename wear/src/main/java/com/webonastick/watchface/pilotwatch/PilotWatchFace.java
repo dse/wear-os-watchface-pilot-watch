@@ -163,7 +163,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private float mClockDialRadiusPx;
         
         private Bitmap mBackgroundBitmap;
-        private Bitmap mBackgroundBitmapZoom;
+        private Bitmap mBackgroundBitmapZoomDayDate;
         private Bitmap mAmbientBackgroundBitmap;
         
         private long mUpdateRateMs = INTERACTIVE_UPDATE_RATE_MS;
@@ -195,7 +195,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private Typeface mTypeface = Typeface.SANS_SERIF;
         private Typeface mCondensedTypeface;
 
-        private boolean mZoom = false;
+        private boolean mZoomDayDate = false;
 
         private float mWatchFaceNameTextSizeVmin = 0.04f;
         private float mWatchFaceNameLeftOffsetVmin = 0.26f;
@@ -1285,11 +1285,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             if (mShowVersionNumber) {
                 mShowVersionNumber = false;
                 initBackgroundBitmap();
-                initBackgroundBitmapZoom();
+                initBackgroundBitmapZoomDayDate();
             }
 
             if (mAmbient) {
-                mZoom = false;
+                mZoomDayDate = false;
                 updateDials();
                 updateHands();
                 initAmbientBackgroundBitmap();
@@ -1319,7 +1319,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
 
-            mZoom = false;
+            mZoomDayDate = false;
             mShowVersionNumber = false;
 
             mSurfaceCenterXPx = width / 2f;
@@ -1360,7 +1360,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             updateHands();
 
             initBackgroundBitmap();
-            initBackgroundBitmapZoom();
+            initBackgroundBitmapZoomDayDate();
             initAmbientBackgroundBitmap();
 
             if (!mAmbient) {
@@ -1568,9 +1568,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             drawBezel(backgroundCanvas, false);
         }
 
-        private void initBackgroundBitmapZoom() {
-            mBackgroundBitmapZoom = Bitmap.createBitmap(mSurfaceWidthPx, mSurfaceHeightPx, Bitmap.Config.ARGB_8888);
-            Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoom);
+        private void initBackgroundBitmapZoomDayDate() {
+            mBackgroundBitmapZoomDayDate = Bitmap.createBitmap(mSurfaceWidthPx, mSurfaceHeightPx, Bitmap.Config.ARGB_8888);
+            Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoomDayDate);
             zoomCanvas(backgroundCanvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
             drawClockDial(backgroundCanvas, false);
             mMainDial.draw(backgroundCanvas, false);
@@ -1791,8 +1791,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     // The user has started a different gesture or otherwise cancelled the tap.
                     break;
                 case TAP_TYPE_TAP:
-                    if (mZoom) {
-                        mZoom = false;
+                    if (mZoomDayDate) {
+                        mZoomDayDate = false;
                     } else {
                         if (mTopSubDial.contains(x, y)) {
                             stopwatchButton1();
@@ -1804,12 +1804,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                             mDemoTimeMode = !mDemoTimeMode;
                             updateTimer();
                         } else if (mBatterySubDial.contains(x, y)) {
-                            mZoom = true;
+                            mZoomDayDate = true;
                             updateTimer();
                         } else if (mLeftSubDial.isBelow(y) && mTopSubDial.isToTheRightOf(x)) {
                             mShowVersionNumber = !mShowVersionNumber;
                             initBackgroundBitmap();
-                            initBackgroundBitmapZoom();
+                            initBackgroundBitmapZoomDayDate();
                             invalidate();
                         }
                     }
@@ -1832,7 +1832,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             drawBackground(canvas);
-            if (mZoom) {
+            if (mZoomDayDate) {
                 canvas.save();
                 zoomCanvas(canvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
             }
@@ -1840,7 +1840,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             drawStopwatch(canvas);
             drawBattery(canvas);
             drawWatchFace(canvas);
-            if (mZoom) {
+            if (mZoomDayDate) {
                 canvas.restore();
             }
             if (!mAmbient) {
@@ -1853,8 +1853,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 canvas.drawBitmap(mAmbientBackgroundBitmap, 0, 0, null);
             } else if (mAmbient) {
                 canvas.drawBitmap(mAmbientBackgroundBitmap, 0, 0, null);
-            } else if (mZoom) {
-                canvas.drawBitmap(mBackgroundBitmapZoom, 0, 0, null);
+            } else if (mZoomDayDate) {
+                canvas.drawBitmap(mBackgroundBitmapZoomDayDate, 0, 0, null);
             } else {
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, null);
             }
