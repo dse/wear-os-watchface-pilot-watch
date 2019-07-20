@@ -1609,15 +1609,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Rect maxDateBounds = new Rect();
 
             Map<String, Integer> dayMap = mCalendar.getDisplayNames(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
-            for (int day = 1; day <= 7; day += 1) {
-                for (String dayText : dayMap.keySet()) {
-                    dayText = dayText.toUpperCase();
-                    mDayTextPaint.getTextBounds(dayText, 0, dayText.length(), dayBounds);
-                    maxDayBounds.left = Math.min(maxDayBounds.left, dayBounds.left);
-                    maxDayBounds.right = Math.max(maxDayBounds.right, dayBounds.right);
-                    maxDayBounds.top = Math.min(maxDayBounds.top, dayBounds.top);
-                    maxDayBounds.bottom = Math.max(maxDayBounds.bottom, dayBounds.bottom);
-                }
+            for (String dayText : dayMap.keySet()) {
+                dayText = dayText.toUpperCase();
+                mDayTextPaint.getTextBounds(dayText, 0, dayText.length(), dayBounds);
+                maxDayBounds.left = Math.min(maxDayBounds.left, dayBounds.left);
+                maxDayBounds.right = Math.max(maxDayBounds.right, dayBounds.right);
+                maxDayBounds.top = Math.min(maxDayBounds.top, dayBounds.top);
+                maxDayBounds.bottom = Math.max(maxDayBounds.bottom, dayBounds.bottom);
             }
 
             for (int date = 1; date <= 31; date += 1) {
