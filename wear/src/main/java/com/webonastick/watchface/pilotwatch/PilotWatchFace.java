@@ -250,7 +250,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public float circle1Diameter = 0f;
             public float circle2Diameter = 0f;
             public float circleStrokeWidthVmin = 0f;
-            public boolean circlesNonAmbientOnly = true;
+            public boolean circlesNonAmbientOnly = false;
 
             /* { 0.25f, "3" }, { 0.5f, "6" }, { 0.5f, "9" }, ... */
             public ArrayList<Pair<Float, String>> textPairs = new ArrayList<Pair<Float, String>>();
@@ -971,21 +971,17 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mMainDial.circle1Diameter = 1.00f;
             mMainDial.circle2Diameter = 0.97f;
             mMainDial.circleStrokeWidthVmin = 0.0025f;
-            mMainDial.circlesNonAmbientOnly = false;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mMainDial);
             tickSet1.numberOfTicks = 12;
             tickSet1.outerDiameter = 0.97f;
             tickSet1.innerDiameter = 0.91f;
-//            tickSet1.ambientOuterDiameter = 1.00f;
-//            tickSet1.ambientInnerDiameter = 0.94f;
             tickSet1.strokeWidthVmin = 0.02f;
             tickSet1.nonAmbientOnly = false;
             WatchDialTickSet tickSet2 = new WatchDialTickSet(mMainDial);
             tickSet2.numberOfTicks = 60;
             tickSet2.outerDiameter = 1.00f;
             tickSet2.innerDiameter = 0.94f;
-//            tickSet2.ambientInnerDiameter = 0.97f;
             tickSet2.strokeWidthVmin = 0.005f;
             tickSet2.nonAmbientOnly = false;
             WatchDialTickSet tickSet3 = new WatchDialTickSet(mMainDial);
@@ -1126,17 +1122,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             tickSet1.numberOfTicks = 2;
             tickSet1.outerDiameter = 1f;
             tickSet1.innerDiameter = 0.80f;
-            tickSet1.ambientInnerDiameter = 0.86f;
             tickSet1.strokeWidthVmin = 0.01f;
-            tickSet1.ambientStrokeWidthVmin = 0.005f;
             tickSet1.nonAmbientOnly = false;
             WatchDialTickSet tickSet2 = new WatchDialTickSet(mBatterySubDial);
             tickSet2.numberOfTicks = 10;
             tickSet2.outerDiameter = 1f;
             tickSet2.innerDiameter = 0.86f;
-            tickSet2.ambientInnerDiameter = 0.90f;
             tickSet2.strokeWidthVmin = 0.005f;
-            tickSet2.ambientStrokeWidthVmin = 0.0025f;
             tickSet2.nonAmbientOnly = false;
             tickSet2.excludeTicks(tickSet1);
             WatchDialTickSet tickSet3 = new WatchDialTickSet(mBatterySubDial);
@@ -1144,7 +1136,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             tickSet3.outerDiameter = 1f;
             tickSet3.innerDiameter = 0.92f;
             tickSet3.strokeWidthVmin = 0.0025f;
-            tickSet3.nonAmbientOnly = true;
+            tickSet3.nonAmbientOnly = false;
             tickSet3.excludeTicks(tickSet1);
             tickSet3.excludeTicks(tickSet2);
 
