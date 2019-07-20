@@ -45,6 +45,7 @@ import android.util.Pair;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -1561,6 +1562,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
          * Draws clock dial without "Pilot Watch 3000" text, version number text, or day/date.
          */
         private void initBackgroundBitmap() {
+            Log.d(TAG, "redrawing mBackgroundBitmap");
             mBackgroundBitmap = Bitmap.createBitmap(mSurfaceWidthPx, mSurfaceHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmap);
             drawClockDial(backgroundCanvas, false);
@@ -1577,6 +1579,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
          * Draws zoomed-in clock dial without day/date.
          */
         private void initBackgroundBitmapZoomDayDate() {
+            Log.d(TAG, "redrawing mBackgroundBitmapZoomDayDate");
             mBackgroundBitmapZoomDayDate = Bitmap.createBitmap(mSurfaceWidthPx, mSurfaceHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoomDayDate);
             zoomCanvas(backgroundCanvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
@@ -1594,6 +1597,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
          * Draws clock dial without "Pilot Watch 3000" text, version number text, or day/date.
          */
         private void initAmbientBackgroundBitmap() {
+            Log.d(TAG, "redrawing mAmbientBackgroundBitmap");
             mAmbientBackgroundBitmap = Bitmap.createBitmap(mSurfaceWidthPx, mSurfaceHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mAmbientBackgroundBitmap);
             drawClockDial(backgroundCanvas, true);
@@ -1615,6 +1619,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             if (mBackgroundBitmap2 != null) {
                 return;
             }
+            Log.d(TAG, "redrawing mBackgroundBitmap2");
             mBackgroundBitmap2 = Bitmap.createBitmap(mBackgroundBitmap);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmap2);
             drawDate(backgroundCanvas, false);
@@ -1628,6 +1633,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             if (mBackgroundBitmapZoomDayDate2 != null) {
                 return;
             }
+            Log.d(TAG, "redrawing mBackgroundBitmapZoomDayDate2");
             mBackgroundBitmapZoomDayDate2 = Bitmap.createBitmap(mBackgroundBitmapZoomDayDate);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoomDayDate2);
             zoomCanvas(backgroundCanvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
@@ -1641,13 +1647,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             if (mAmbientBackgroundBitmap2 != null) {
                 return;
             }
+            Log.d(TAG, "redrawing mAmbientBackgroundBitmap2");
             mAmbientBackgroundBitmap2 = Bitmap.createBitmap(mAmbientBackgroundBitmap);
             Canvas backgroundCanvas = new Canvas(mAmbientBackgroundBitmap2);
             drawDate(backgroundCanvas, true);
             drawWatchFaceName(backgroundCanvas, true);
         }
 
-        private int mDayOfWeekFontStretch[] = {0, 0, 0, 0, 0, 0, 0, 0}; // 1 = MONDAY ... 7 = SUNDAY
+        private HashMap<String, Integer> mDayFontStretchMap = new HashMap<String, Integer>();
 
         private void drawClockDial(Canvas canvas, boolean ambient) {
             canvas.drawColor(Color.WHITE);
@@ -1675,13 +1682,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mDayTextPaint.setTypeface(mTypeface);
             for (String dayText : dayMap.keySet()) {
                 dayText = dayText.toUpperCase();
-                Integer dayNumber = dayMap.get(dayText);
-                if (dayNumber != null && (dayNumber >= 1 && dayNumber <= 7)) {
-                    mDayOfWeekFontStretch[dayNumber] = -1; /* condensed */
-                    mDayTextPaint.getTextBounds(dayText, 0, dayText.length(), dayBounds);
-                    if (dayBounds.width() <= maxDayBounds.width()) {
-                        mDayOfWeekFontStretch[dayNumber] = 0; /* normal */
-                    }
+                mDayTextPaint.getTextBounds(dayText, 0, dayText.length(), dayBounds);
+                if (dayBounds.width() <= maxDayBounds.width()) {
+                    mDayFontStretchMap.put(dayText, 0);
+                } else {
+                    mDayFontStretchMap.put(dayText, -1);
                 }
             }
 
@@ -1891,7 +1896,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             int dayOfWeek  = mCalendar.get(Calendar.DAY_OF_WEEK);
 
             // FIXME: if date has changed, set all the bitmap2's to null.
-            if (lastDayOfMonth == -1 || lastDayOfMonth != dayOfMonth || lastDayOfWeek == -1 || lastDayOfWeek == dayOfWeek) {
+            if ((lastDayOfMonth == -1) || (lastDayOfMonth != dayOfMonth) || (lastDayOfWeek == -1) || (lastDayOfWeek != dayOfWeek)) {
                 mBackgroundBitmap2 = null;
                 mBackgroundBitmapZoomDayDate2 = null;
                 mAmbientBackgroundBitmap2 = null;
@@ -1943,7 +1948,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             float baselineY = mSurfaceCenterXPx + mDayDateTextSizePx * TEXT_CAP_HEIGHT / 2;
 
-            if (mDayOfWeekFontStretch[day] <= -1) {
+            Integer fontStretch = mDayFontStretchMap.get(dayText);
+            if (fontStretch == null) {
+                fontStretch = -1;
+            }
+            if (fontStretch <= -1) {
                 mDayTextPaint.setTypeface(mCondensedTypeface);
             } else {
                 mDayTextPaint.setTypeface(mTypeface);
