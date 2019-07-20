@@ -3,7 +3,7 @@ package com.webonastick.watchface.pilotwatch;
 import android.os.Handler;
 
 public class MultiTapHandler {
-    public static final int MULTI_TAP_THRESHOLD_MS = 250;
+    public static final int MULTI_TAP_THRESHOLD_MS = 500;
     private int mTapType = -1;
     private int mNumberOfTaps = -1;
     private Handler mHandler = null;
