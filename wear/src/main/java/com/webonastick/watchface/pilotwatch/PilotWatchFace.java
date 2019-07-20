@@ -138,6 +138,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private boolean mLowBitAmbient;
         private boolean mBurnInProtection;
 
+        private float mPixelDensity;
+
         private int mBackgroundColor;
         private int mHourHandColor;
         private int mMinuteHandColor;
@@ -191,7 +193,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private WatchHand mSecondHand;
 
         private WatchHand mChronographSecondFractionHand;
-        private WatchHand mChronographSecondHand;
+        private WatchHand mSubdialSecondHand;
         private WatchHand mChronographMinuteHand;
         private WatchHand mChronographHourHand;
         private WatchHand mBatteryHand;
@@ -226,7 +228,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private boolean mStopwatchPaused = false;
         private long mStopwatchStartTimeMs = 0;
         private long mStopwatchTimeMs = 0;
-        private boolean mAmbientStopwatch = false;
 
         /**
          * For keeping the watch face on longer than the standard
@@ -926,15 +927,17 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onCreate(SurfaceHolder holder) {
+            super.onCreate(holder);
+
             cancelMultiTap();
 
             if (Build.MODEL.startsWith("sdk_") || Build.FINGERPRINT.contains("/sdk_")) {
                 mEmulatorMode = true;
             }
 
-            mCondensedTypeface = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
+            mPixelDensity = getResources().getDisplayMetrics().density;
 
-            super.onCreate(holder);
+            mCondensedTypeface = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
 
             WatchFaceStyle.Builder builder;
             WatchFaceStyle style;
@@ -1168,13 +1171,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mChronographSecondFractionHand.widthVmin = 0.01f;
             mChronographSecondFractionHand.shadowRadiusPx = 2f;
 
-            mChronographSecondHand = new WatchHand(mBottomSubDial);
-            mChronographSecondHand.color = mSecondHandColor;
-            mChronographSecondHand.nonAmbientOnly = false; /* can draw in ambient in certain situations */
-            mChronographSecondHand.lengthPctRadius = 0.9f;
-            mChronographSecondHand.lengthBehindPctRadius = 0.225f;
-            mChronographSecondHand.widthVmin = 0.01f;
-            mChronographSecondHand.shadowRadiusPx = 2f;
+            mSubdialSecondHand = new WatchHand(mBottomSubDial);
+            mSubdialSecondHand.color = mSecondHandColor;
+            mSubdialSecondHand.nonAmbientOnly = false; /* can draw in ambient in certain situations */
+            mSubdialSecondHand.lengthPctRadius = 0.9f;
+            mSubdialSecondHand.lengthBehindPctRadius = 0.225f;
+            mSubdialSecondHand.widthVmin = 0.01f;
+            mSubdialSecondHand.shadowRadiusPx = 2f;
 
             mChronographMinuteHand = new WatchHand(mLeftSubDial);
             mChronographMinuteHand.color = mMinuteHandColor;
@@ -1241,7 +1244,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mBatteryHand.update();
             mChronographHourHand.update();
             mChronographMinuteHand.update();
-            mChronographSecondHand.update();
+            mSubdialSecondHand.update();
             mChronographSecondFractionHand.update();
         }
 
@@ -1278,6 +1281,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             super.onPropertiesChanged(properties);
             mLowBitAmbient = properties.getBoolean(PROPERTY_LOW_BIT_AMBIENT, false);
             mBurnInProtection = properties.getBoolean(PROPERTY_BURN_IN_PROTECTION, false);
+            mPixelDensity = getResources().getDisplayMetrics().density;
         }
 
         @Override
@@ -1327,6 +1331,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             cancelMultiTap();
             super.onSurfaceChanged(holder, format, width, height);
+
+            mPixelDensity = getResources().getDisplayMetrics().density;
 
             mZoomDayDate = false;
             mShowVersionNumber = false;
@@ -1609,11 +1615,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             Canvas backgroundCanvas = new Canvas(mAmbientBackgroundBitmap);
             drawClockDial(backgroundCanvas, true);
             mMainDial.draw(backgroundCanvas, true);
-            if (mAmbientStopwatch && (mStopwatchRunning || mStopwatchPaused)) {
-                mTopSubDial.draw(backgroundCanvas, true);
-                mLeftSubDial.draw(backgroundCanvas, true);
-                mBottomSubDial.draw(backgroundCanvas, true);
-            }
+//                mTopSubDial.draw(backgroundCanvas, true);
+//                mLeftSubDial.draw(backgroundCanvas, true);
+//                mBottomSubDial.draw(backgroundCanvas, true);
             mBatterySubDial.draw(backgroundCanvas, true);
             drawBezel(backgroundCanvas, true);
             mAmbientBackgroundBitmap2 = null;
@@ -1839,8 +1843,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private static final float PADDING_DP = 4;
 
         private float getPaddingPx() {
-            float scale = getResources().getDisplayMetrics().density;
-            return PADDING_DP * scale;
+            return PADDING_DP * mPixelDensity;
         }
 
         /**
@@ -1869,10 +1872,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                             cancelMultiTap();
                             stopwatchButton2();
                             updateTimer();
-                        } else if (mBottomSubDial.contains(x, y) && mEmulatorMode) {
-                            cancelMultiTap();
-                            mDemoTimeMode = !mDemoTimeMode;
-                            updateTimer();
+                        } else if (mBottomSubDial.contains(x, y)) {
+                            multiTapEvent(MULTI_TAP_TYPE_BOTTOM_SUB_DIAL);
                         } else if (mBatterySubDial.contains(x, y)) {
                             cancelMultiTap();
                             mZoomDayDate = true;
@@ -1882,17 +1883,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                             mShowVersionNumber = !mShowVersionNumber;
                             mBackgroundBitmap2 = null;
                             invalidate();
+                        } else if (isInTapArea(x, y, mSurfaceCenterXPx, mSurfaceCenterYPx)) {
+                            multiTapEvent(MULTI_TAP_TYPE_CENTER_OF_DIAL);
                         } else {
-                            if (
-                                    mLeftSubDial.isToTheLeftOf(x) &&
-                                            mBatterySubDial.isToTheRightOf(x) &&
-                                            mTopSubDial.isAbove(y) &&
-                                            mBottomSubDial.isBelow(y)
-                            ) {
-                                multiTapEvent(MULTI_TAP_TYPE_CENTER_OF_DIAL);
-                            } else {
-                                cancelMultiTap();
-                            }
+                            cancelMultiTap();
                         }
                     }
                     break;
@@ -1903,10 +1897,38 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
+        private final int TAP_RADIUS_DP = 24;
+
+        private boolean isInTapArea(float x, float y, float cx, float cy) {
+            float dx = x - cx;
+            float dy = y - cy;
+            return dx * dx + dy * dy <= (TAP_RADIUS_DP * TAP_RADIUS_DP * mPixelDensity * mPixelDensity);
+        }
+
         private final int MULTI_TAP_TYPE_CENTER_OF_DIAL = 1;
+        private final int MULTI_TAP_TYPE_BOTTOM_SUB_DIAL = 2;
 
         public void onMultiTapCommand(int type, int numberOfTaps) {
-            Log.d(TAG, String.format("onMultiTapCommand(%d, %d);", type, numberOfTaps));
+            switch (type) {
+                case MULTI_TAP_TYPE_BOTTOM_SUB_DIAL:
+                    switch (numberOfTaps) {
+                        case 1:
+                            mPutChronographSecondsOnSubDial = !mPutChronographSecondsOnSubDial;
+                            break;
+                        case 2:
+                            if (mEmulatorMode) {
+                                mDemoTimeMode = !mDemoTimeMode;
+                                updateTimer();
+                            }
+                            break;
+                    }
+                    break;
+                case MULTI_TAP_TYPE_CENTER_OF_DIAL:
+                    switch (numberOfTaps) {
+
+                    }
+                    break;
+            }
         }
 
         private MultiTapHandler mMultiTapHandler = null;
@@ -1938,7 +1960,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             int dayOfMonth = mCalendar.get(Calendar.DAY_OF_MONTH);
             int dayOfWeek  = mCalendar.get(Calendar.DAY_OF_WEEK);
 
-            // FIXME: if date has changed, set all the bitmap2's to null.
             if ((lastDayOfMonth == -1) || (lastDayOfMonth != dayOfMonth) || (lastDayOfWeek == -1) || (lastDayOfWeek != dayOfWeek)) {
                 mBackgroundBitmap2 = null;
                 mBackgroundBitmapZoomDayDate2 = null;
@@ -1950,9 +1971,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 canvas.save();
                 zoomCanvas(canvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
             }
-            drawStopwatch(canvas);
             drawBattery(canvas);
-            drawWatchFace(canvas);
+            drawTimeAndStopwatch(canvas);
             if (mZoomDayDate) {
                 canvas.restore();
             }
@@ -2004,39 +2024,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             canvas.drawText(dateText, mDateWindowCenterXPx, baselineY, mDateTextPaint);
         }
 
-        private void drawWatchFace(Canvas canvas) {
-            int h;
-            int m;
-            int s;
-            int ms;
-
-            h = mCalendar.get(Calendar.HOUR);
-            m = mCalendar.get(Calendar.MINUTE);
-            s = mCalendar.get(Calendar.SECOND);
-            if (mPutChronographSecondsOnSubDial) {
-                ms = mCalendar.get(Calendar.MILLISECOND);
-                ms = ms / 200 * 200;
-            } else {
-                ms = 0;
-            }
-
-            final float seconds = (float) s + (float) ms / 1000f; /* 0 to 60 */
-            final float minutes = (float) m + seconds / 60f;      /* 0 to 60 */
-            final float hours = (float) h + minutes / 60f;      /* 0 to 12 */
-
-            final float secondsRotation = seconds / 60f;
-            final float minutesRotation = minutes / 60f;
-            final float hoursRotation = hours / 12f;
-
-            mHourHand.draw(canvas, hoursRotation);
-            mMinuteHand.draw(canvas, minutesRotation);
-            if (!mAmbient) {
-                mSecondHand.draw(canvas, secondsRotation);
-            } else if (mAmbientUpdateRateSeconds == 1) {
-                mSecondHand.draw(canvas, secondsRotation);
-            }
-        }
-
         private void drawBattery(Canvas canvas) {
             float batteryPercentage = -1f;
             IntentFilter intentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -2058,38 +2045,71 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mBatteryHand.draw(canvas, batteryRotation);
         }
 
-        private void drawStopwatch(Canvas canvas) {
-            if (mAmbient && !mAmbientStopwatch) {
-                return;
+        private void drawTimeAndStopwatch(Canvas canvas) {
+            WatchHand chronographSecondHand = mPutChronographSecondsOnSubDial ? mSubdialSecondHand : mSecondHand;
+            WatchHand wallTimeSecondHand = mPutChronographSecondsOnSubDial ? mSecondHand : mSubdialSecondHand;
+            boolean showChronograph = !mAmbient;
+            boolean showSecondHand = !mAmbient;
+
+            int h = mCalendar.get(Calendar.HOUR);
+            int m = mCalendar.get(Calendar.MINUTE);
+            int s = mCalendar.get(Calendar.SECOND);
+            int ms;
+            if (mPutChronographSecondsOnSubDial) {
+                ms = mCalendar.get(Calendar.MILLISECOND);
+                ms = ms / 200 * 200;
+            } else {
+                ms = 0;
             }
 
-            long totalMs = getStopwatchTimeMs();
+            final float seconds = (float) s + (float) ms / 1000f; /* 0 to 60 */
+            final float minutes = (float) m + seconds / 60f;      /* 0 to 60 */
+            final float hours = (float) h + minutes / 60f;      /* 0 to 12 */
+            final float secondHandDegrees = seconds / 60f;
+            final float minuteHandDegrees = minutes / 60f;
+            final float hourHandDegrees = hours / 12f;
 
-            if (mDemoTimeMode) {
-                totalMs = 650 + 1000 * (32 + 60 * (10 + (60 * 10)));
+            long chronographMs = 0;
+            float chronographSecondFractionHandDegrees = 0;
+            float chronographSecondHandDegrees = 0;
+            float chronographMinuteHandDegrees = 0;
+            float chronographHourHandDegrees = 0;
+
+            if (showChronograph) {
+                chronographMs = getStopwatchTimeMs();
+                if (mDemoTimeMode) {
+                    chronographMs = 650 + 1000 * (32 + 60 * (10 + (60 * 10)));
+                }
+                chronographSecondFractionHandDegrees = (chronographMs % 1000) / 1000f;
+                if (!mPutChronographSecondsOnSubDial) {
+                    chronographMs = (long)(chronographMs / 1000) * 1000;
+                }
+                chronographSecondHandDegrees = (chronographMs % 60000) / 60000f;
+                chronographMinuteHandDegrees = (chronographMs % 3600000) / 3600000f;
+                chronographHourHandDegrees = (chronographMs % 43200000) / 43200000f;
+                mChronographHourHand.draw(canvas, chronographHourHandDegrees);
+                mChronographMinuteHand.draw(canvas, chronographMinuteHandDegrees);
+                mChronographSecondFractionHand.draw(canvas, chronographSecondFractionHandDegrees);
             }
 
-            final float millisecondHandRotationDegrees = (totalMs % 1000) / 1000f;
-            final float secondHandRotationDegrees = (totalMs % 60000) / 60000f;
-            final float minuteHandRotationDegrees = (totalMs % 3600000) / 3600000f;
-            final float hourHandRotationDegrees = (totalMs % 43200000) / 43200000f;
-
-            if (!mAmbient) {
-                mChronographHourHand.draw(canvas, hourHandRotationDegrees);
-                mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
-                mChronographSecondHand.draw(canvas, secondHandRotationDegrees);
-                mChronographSecondFractionHand.draw(canvas, millisecondHandRotationDegrees);
-            } else if (mAmbientStopwatch && (mStopwatchRunning || mStopwatchPaused)) {
-                if (mAmbientUpdateRateSeconds == 0) {
-                    mChronographHourHand.draw(canvas, hourHandRotationDegrees);
-                    mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
-                } else if (mAmbientUpdateRateSeconds == 1) {
-                    mChronographHourHand.draw(canvas, hourHandRotationDegrees);
-                    mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
-                    mChronographSecondHand.draw(canvas, secondHandRotationDegrees);
-                } else {
-                    mChronographHourHand.draw(canvas, hourHandRotationDegrees);
-                    mChronographMinuteHand.draw(canvas, minuteHandRotationDegrees);
+            if (mPutChronographSecondsOnSubDial) {
+                if (showChronograph) {
+                    chronographSecondHand.draw(canvas, chronographSecondHandDegrees);
+                }
+            } else {
+                if (showSecondHand) {
+                    wallTimeSecondHand.draw(canvas, secondHandDegrees);
+                }
+            }
+            mHourHand.draw(canvas, hourHandDegrees);
+            mMinuteHand.draw(canvas, minuteHandDegrees);
+            if (mPutChronographSecondsOnSubDial) {
+                if (showSecondHand) {
+                    wallTimeSecondHand.draw(canvas, secondHandDegrees);
+                }
+            } else {
+                if (showChronograph) {
+                    chronographSecondHand.draw(canvas, chronographSecondHandDegrees);
                 }
             }
         }
