@@ -1774,9 +1774,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 return;
             }
             if (mShowVersionNumber) {
-                drawWatchFaceVersionText2(canvas, ambient, isShadow);
+                drawWatchFaceVersionTextArcs(canvas, ambient, isShadow);
             } else {
-                drawWatchFaceNameText2(canvas, ambient, isShadow);
+                drawWatchFaceNameTextArcs(canvas, ambient, isShadow);
             }
         }
 
@@ -1871,12 +1871,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         }
 
-        private void drawWatchFaceNameText2(Canvas canvas, Boolean ambient, boolean isShadow) {
+        private void drawWatchFaceNameTextArcs(Canvas canvas, Boolean ambient, boolean isShadow) {
             drawTextUpperLeftArc(canvas, ambient, isShadow, "PILOT WATCH");
             drawTextUpperRightArc(canvas, ambient, isShadow, "3000");
         }
 
-        private void drawWatchFaceVersionText2(Canvas canvas, Boolean ambient, boolean isShadow) {
+        private void drawWatchFaceVersionTextArcs(Canvas canvas, Boolean ambient, boolean isShadow) {
             try {
                 PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
                 String versionNameText = pInfo.versionName;
