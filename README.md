@@ -17,9 +17,11 @@ Source code is on [GitHub](https://github.com/dse/wear-os-watchface-pilot-watch)
 
 -   10-second ambient refresh.
 
--   Watch face displays its own name.
+-   Watch face displays its own name now.  Just a little touch of branding.
 
-    For bug reporting: Tap on it to show the watch face version number and version code.
+    You can tap the words "Pilot Watch" to display the application's version number (e.g., "1.1.0") and version code (e.g., "(90)").
+
+    This is useful for telling me what version of the watch face you're running.  :-)
 
 -   A few layout tweaks.
 
