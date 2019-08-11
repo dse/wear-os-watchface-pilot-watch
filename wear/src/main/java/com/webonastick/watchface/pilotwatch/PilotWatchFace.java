@@ -279,6 +279,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             private float shadowDXPx = 0;
             private float shadowDYPx = 1;
 
+            public Typeface typeface = null;
+
             public ArrayList<WatchDialTickSet> tickSets = new ArrayList<WatchDialTickSet>();
 
             public void addText(float rotation, String text) {
@@ -502,7 +504,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 float ticksInner = this.ticksInner();
 
                 Paint textPaint = new Paint();
-                textPaint.setTypeface(mTypeface);
+                if (typeface != null) {
+                    textPaint.setTypeface(typeface);
+                } else {
+                    textPaint.setTypeface(mTypeface);
+                }
                 if (isShadow) {
                     textPaint.setColor(Color.BLACK);
                 } else {
@@ -1125,7 +1131,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mBatterySubDial.circleStrokeWidthVmin = 0.0025f;
             mBatterySubDial.addText(0.00f, "0%");
             mBatterySubDial.addText(1.00f, "100%");
-            mBatterySubDial.textDirection = WatchDialTextDirection.TEXT_DIRECTION_RADIAL;
+            mBatterySubDial.typeface = mCondensedTypeface;
+            // mBatterySubDial.textDirection = WatchDialTextDirection.TEXT_DIRECTION_RADIAL;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mBatterySubDial);
             tickSet1.numberOfTicks = 2;
