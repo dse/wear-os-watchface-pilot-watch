@@ -1,17 +1,32 @@
 package com.webonastick.watchface.pilotwatch;
 
 /**
- * Pilot Watch 3000 watchface for Wear OS and Android Wear.
+ * <h1>
+ *     Pilot Watch 3000, a watch face for Wear OS and Android Wear.
+ * </h1>
  * <p>
- * Notes about variable names:
- * - A lot of them end with units.
- * - Px is pixels.
- * - Vmin is the unit of a multiple of the viewport's width or height,
- * whichever is less.  Example: on a 300*400 display, 0.5 vmin = 150px.
- * It's kind of like the vmin unit in CSS, except it's not a percentage,
- * it's between 0.0 and 1.0 for 0 to 100%.
- * - All angles are assumed to be DEGREES unless otherwise indicated.
- * - Pct means Percentage.
+ *     Notes about variable names:
+ * </p>
+ * <ul>
+ *     <li>
+ *         A lot of them end with units.
+ *     </li>
+ *     <li>
+ *         Px means pixels.
+ *     </li>
+ *     <li>
+ *         Vmin is the proportion, between 0.0 and 1.0, of the viewport's width or height, whichever is less.
+ *     </li>
+ *     <li>
+ *         All angles are assumed to be degrees unless otherwise indicated.
+ *     </li>
+ *     <li>
+ *         Pct means Percentage.
+ *     </li>
+ * </ul>
+ * <p>
+ *     This source code may contain experimental features, some of which may be unused.
+ * </p>
  */
 
 import android.app.AlarmManager;
