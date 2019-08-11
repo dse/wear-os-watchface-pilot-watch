@@ -13,15 +13,19 @@ Source code is on [GitHub](https://github.com/dse/wear-os-watchface-pilot-watch)
 
 ### v1.1.0 (upcoming)
 
-- Companion Android app for watch face installation on Android Wear 1.x watches.
-- 10-second ambient refresh.
-- Watch face displays its own name.
-- A few layout tweaks.
-- For bug reporting: tap the watch face name to show the version number.
+-   Companion Android app for watch face installation on Android Wear 1.x watches.
+
+-   10-second ambient refresh.
+
+-   Watch face displays its own name.
+
+    For bug reporting: Tap on it to show the watch face version number and version code.
+
+-   A few layout tweaks.
 
 ### v1.0.0
 
-- Initial Release
+-   Initial Release
 
 ## License
 
