@@ -27,6 +27,10 @@ Source code is on [GitHub](https://github.com/dse/wear-os-watchface-pilot-watch)
 
 -   Initial Release
 
+## Featured in...
+
+-   [This YouTube review](https://www.youtube.com/watch?v=B-XZ6ustzoI) of three smartwatches.
+
 ## License
 
 [GPL2](COPYING.txt)
