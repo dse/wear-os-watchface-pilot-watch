@@ -1774,9 +1774,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 return;
             }
             if (mShowVersionNumber) {
-                drawWatchFaceVersionText(canvas, ambient, isShadow);
+                drawWatchFaceVersionText2(canvas, ambient, isShadow);
             } else {
-                drawWatchFaceNameText(canvas, ambient, isShadow);
+                drawWatchFaceNameText2(canvas, ambient, isShadow);
             }
         }
 
@@ -1793,11 +1793,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 }
             }
             textPaint.setTextSize(getClockDialTextSizePx(mWatchFaceNameTextSizeVmin));
-            if (ambient && mTopSubDial.nonAmbientOnly) {
-                textPaint.setTypeface(mTypeface);
-            } else {
-                textPaint.setTypeface(mCondensedTypeface);
-            }
+            textPaint.setTypeface(mTypeface);
             return textPaint;
         }
 
@@ -1843,6 +1839,53 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 canvas.drawText("(" + pInfo.versionCode + ")", xPx, yPx, textPaint);
             } catch (Exception e) {
                 drawWatchFaceNameText(canvas, ambient, isShadow);
+            }
+        }
+
+        private void drawTextUpperLeftArc(Canvas canvas, boolean ambient, boolean isShadow, String text) {
+            drawTextArc(canvas, ambient, isShadow, text, 180f, 90f);
+        }
+
+        private void drawTextUpperRightArc(Canvas canvas, boolean ambient, boolean isShadow, String text) {
+            drawTextArc(canvas, ambient, isShadow, text, 270f, 72f);
+        }
+
+        private void drawTextArc(Canvas canvas, boolean ambient, boolean isShadow, String text, float startAngle, float sweepAngle) {
+            float dx = isShadow ? 0f : 0f;
+            float dy = isShadow ? 1f : 0f;
+            float lineSpacingPx = getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
+            Paint textPaint = getWatchFaceNameTextPaint(ambient, isShadow);
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setLetterSpacing(lineSpacingPx * 0.005f);
+            float baselineRadiusPx = mClockDialRadiusPx * mMainDial.ticksInner() - getPaddingPx() - textPaint.getTextSize() * 0.7f;
+
+            Path path = new Path();
+            path.addArc(
+                    mSurfaceCenterXPx - baselineRadiusPx + dx,
+                    mSurfaceCenterYPx - baselineRadiusPx + dy,
+                    mSurfaceCenterXPx + baselineRadiusPx + dx,
+                    mSurfaceCenterYPx + baselineRadiusPx + dy,
+                    startAngle, sweepAngle
+            );
+            canvas.drawTextOnPath(text, path, 0f, 0f, textPaint);
+
+        }
+
+        private void drawWatchFaceNameText2(Canvas canvas, Boolean ambient, boolean isShadow) {
+            drawTextUpperLeftArc(canvas, ambient, isShadow, "PILOT WATCH");
+            drawTextUpperRightArc(canvas, ambient, isShadow, "3000");
+        }
+
+        private void drawWatchFaceVersionText2(Canvas canvas, Boolean ambient, boolean isShadow) {
+            try {
+                PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
+                String versionNameText = pInfo.versionName;
+                String versionCodeText = "(" + pInfo.versionCode + ")";
+
+                drawTextUpperLeftArc(canvas, ambient, isShadow, versionNameText);
+                drawTextUpperRightArc(canvas, ambient, isShadow, versionCodeText);
+            } catch (Exception e) {
+                // do nothing
             }
         }
 
@@ -2065,7 +2108,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             int s = mCalendar.get(Calendar.SECOND);
             int ms = mCalendar.get(Calendar.MILLISECOND); /* 0 to 999 */
 
-            final float seconds = (float) s + (float) ms / 1000f; /* [0f, 60f) */
+            /* when stopwatch is running, watch face refreshes more often.
+               However, we still want to only "tick" the time second hand
+               5 times a second. */
+            int watchMs = (ms / 200) * 200;
+
+            final float seconds = (float) s + (float) watchMs / 1000f; /* [0f, 60f) */
             final float minutes = (float) m + seconds / 60f;      /* [0f, 60f) */
             final float hours = (float) h + minutes / 60f;        /* [0f, 12f) */
 
