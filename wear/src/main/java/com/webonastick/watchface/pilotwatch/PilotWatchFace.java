@@ -1927,7 +1927,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     break;
                 case MULTI_TAP_TYPE_CENTER_OF_DIAL:
                     switch (numberOfTaps) {
-
+                        // FIXME: what to do here?
                     }
                     break;
             }
