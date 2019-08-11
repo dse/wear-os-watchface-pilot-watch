@@ -9,8 +9,8 @@ android {
 
         // increase for each release; sync with wear build.gradle
         // last digit 1 for mobile, 0 for wear
-        versionCode 71
-        versionName "1.0.95"
+        versionCode 81
+        versionName "1.0.96"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
