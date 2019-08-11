@@ -1250,19 +1250,18 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
         private void setUpdateRate() {
             if (mPutChronographSecondsOnSubDial) {
+                // chrono seconds on subdial; time seconds on main dial
                 if (mStopwatchRunning) {
-                    mUpdateRateMs = 50;
+                    mUpdateRateMs = 50; // for refreshing fraction of second
                 } else {
-                    // seconds for time of day is on main dial.
                     mUpdateRateMs = 200;
                 }
             } else {
+                // time seconds on subdial; chrono seconds on main dial
                 if (mStopwatchRunning) {
-                    mUpdateRateMs = 50;
+                    mUpdateRateMs = 50; // for refreshing fraction of second
                 } else {
-                    // seconds for time of day is on subdial; that
-                    // updates once per second.
-                    mUpdateRateMs = 1000;
+                    mUpdateRateMs = 200;
                 }
             }
         }
@@ -1913,7 +1912,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 case MULTI_TAP_TYPE_BOTTOM_SUB_DIAL:
                     switch (numberOfTaps) {
                         case 1:
-                            mPutChronographSecondsOnSubDial = !mPutChronographSecondsOnSubDial;
+                            if (mEmulatorMode) {
+                                mPutChronographSecondsOnSubDial = !mPutChronographSecondsOnSubDial;
+                                setUpdateRate();
+                            }
                             break;
                         case 2:
                             if (mEmulatorMode) {
@@ -2054,17 +2056,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             int h = mCalendar.get(Calendar.HOUR);
             int m = mCalendar.get(Calendar.MINUTE);
             int s = mCalendar.get(Calendar.SECOND);
-            int ms;
-            if (mPutChronographSecondsOnSubDial) {
-                ms = mCalendar.get(Calendar.MILLISECOND);
-                ms = ms / 200 * 200;
-            } else {
-                ms = 0;
-            }
+            int ms = mCalendar.get(Calendar.MILLISECOND); /* 0 to 999 */
 
-            final float seconds = (float) s + (float) ms / 1000f; /* 0 to 60 */
-            final float minutes = (float) m + seconds / 60f;      /* 0 to 60 */
-            final float hours = (float) h + minutes / 60f;      /* 0 to 12 */
+            final float seconds = (float) s + (float) ms / 1000f; /* [0f, 60f) */
+            final float minutes = (float) m + seconds / 60f;      /* [0f, 60f) */
+            final float hours = (float) h + minutes / 60f;        /* [0f, 12f) */
+
             final float secondHandDegrees = seconds / 60f;
             final float minuteHandDegrees = minutes / 60f;
             final float hourHandDegrees = hours / 12f;
@@ -2081,9 +2078,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     chronographMs = 650 + 1000 * (32 + 60 * (10 + (60 * 10)));
                 }
                 chronographSecondFractionHandDegrees = (chronographMs % 1000) / 1000f;
-                if (!mPutChronographSecondsOnSubDial) {
-                    chronographMs = (long)(chronographMs / 1000) * 1000;
-                }
+
+                // whether chronograph seconds are on the subdial or the main dial,
+                // we change them once a second.
+                chronographMs = (long) (chronographMs / 1000) * 1000;
+
                 chronographSecondHandDegrees = (chronographMs % 60000) / 60000f;
                 chronographMinuteHandDegrees = (chronographMs % 3600000) / 3600000f;
                 chronographHourHandDegrees = (chronographMs % 43200000) / 43200000f;
@@ -2092,6 +2091,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 mChronographSecondFractionHand.draw(canvas, chronographSecondFractionHandDegrees);
             }
 
+            // draw whichever is the subdial seconds first
             if (mPutChronographSecondsOnSubDial) {
                 if (showChronograph) {
                     chronographSecondHand.draw(canvas, chronographSecondHandDegrees);
@@ -2101,8 +2101,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     wallTimeSecondHand.draw(canvas, secondHandDegrees);
                 }
             }
+
+            // then draw these hands
             mHourHand.draw(canvas, hourHandDegrees);
             mMinuteHand.draw(canvas, minuteHandDegrees);
+
+            // then draw whichever is used for the main dial seconds
             if (mPutChronographSecondsOnSubDial) {
                 if (showSecondHand) {
                     wallTimeSecondHand.draw(canvas, secondHandDegrees);
