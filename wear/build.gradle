@@ -9,8 +9,8 @@ android {
 
         // increase for each release; sync with mobile build.gradle
         // last digit 1 for mobile, 0 for wear
-        versionCode 60
-        versionName "1.0.94"
+        versionCode 70
+        versionName "1.0.95"
 
         multiDexEnabled true
     }
