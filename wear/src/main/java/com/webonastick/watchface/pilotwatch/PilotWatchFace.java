@@ -1800,7 +1800,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             float lineSpacingPx = getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
             Paint textPaint = getWatchFaceNameTextPaint(ambient, isShadow);
             textPaint.setTextAlign(Paint.Align.CENTER);
-            textPaint.setLetterSpacing(lineSpacingPx * 0.01f);
+            textPaint.setLetterSpacing(lineSpacingPx * 0.005f);
             float xPx = mSurfaceCenterXPx - mClockDialDiameterPx * mWatchFaceNameLeftOffsetVmin + dx;
             if (ambient && mTopSubDial.nonAmbientOnly) {
                 xPx = mSurfaceCenterXPx + dx;
@@ -1822,10 +1822,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 float dy = isShadow ? 1f : 0f;
                 float lineSpacingPx = getClockDialTextSizePx(mWatchFaceNameTextSizeVmin);
                 Paint textPaint = getWatchFaceNameTextPaint(ambient, isShadow);
-                textPaint.setTextAlign(Paint.Align.CENTER);
-                textPaint.setLetterSpacing(lineSpacingPx * 0.01f);
+                textPaint.setTextAlign(Paint.Align.RIGHT);
+                textPaint.setLetterSpacing(lineSpacingPx * 0.005f);
                 float paddingPx = getPaddingPx();
-                float xPx = mSurfaceCenterXPx - mClockDialDiameterPx * mWatchFaceNameLeftOffsetVmin + dx;
+                float xPx = mSurfaceCenterXPx - mTopSubDial.radiusPx - getPaddingPx() + dx;
                 if (ambient && mTopSubDial.nonAmbientOnly) {
                     xPx = mSurfaceCenterXPx + dx;
                 }
