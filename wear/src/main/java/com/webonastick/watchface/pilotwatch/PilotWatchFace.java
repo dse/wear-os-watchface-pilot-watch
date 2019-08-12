@@ -133,6 +133,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
     private static final float TEXT_ROTATION_FUDGE_FACTOR = 1f;
     private static final float TEXT_CAP_HEIGHT = 0.7f;
 
+    /* On at least two round watches the outer border won't display unless you factor this. */
+    private static final int ROUND_CHOPPED_PX = 1;
+
     private class Engine extends CanvasWatchFaceService.Engine implements MultiTapEventHandler {
         private static final String TAG = "PilotWatchFace";
 
@@ -1365,6 +1368,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mSurfaceVminPx = Math.min(width, height);
 
             mDialDiameterPx = mSurfaceVminPx - MINIMUM_STROKE_WIDTH_PX;
+            if (getApplicationContext().getResources().getConfiguration().isScreenRound()) {
+                mDialDiameterPx -= ROUND_CHOPPED_PX;
+            }
+
             mDialRadiusPx = mDialDiameterPx / 2;
 
             switch (mBezelType) {
