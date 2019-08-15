@@ -1,0 +1,5 @@
+# TODO
+
+-   tutorial?
+
+-   conic gradients
