@@ -113,6 +113,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         public static float mod(float x, float y) {
             return x - (float) Math.floor(x / y) * y;
         }
+
         public static float window(float x, float min, float max) {
             float result = x;
             result = Math.min(result, max);
@@ -381,8 +382,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     shadowAlpha = Math.round(255 * shadowOpacity);
                     highlightColor = ((0xff & highlightAlpha) << 24) | 0xffffff;
                     shadowColor = ((0xff & shadowAlpha) << 24) | 0x000000;
-                    outsetColors = new int[] {Color.TRANSPARENT, shadowColor, Color.TRANSPARENT, highlightColor, Color.TRANSPARENT};
-                    insetColors = new int[] {Color.TRANSPARENT, highlightColor, Color.TRANSPARENT, shadowColor, Color.TRANSPARENT};
+                    outsetColors = new int[]{Color.TRANSPARENT, shadowColor, Color.TRANSPARENT, highlightColor, Color.TRANSPARENT};
+                    insetColors = new int[]{Color.TRANSPARENT, highlightColor, Color.TRANSPARENT, shadowColor, Color.TRANSPARENT};
                     borderOutsetShader = new SweepGradient(centerXPx, centerYPx, outsetColors, null);
                     borderInsetShader = new SweepGradient(centerXPx, centerYPx, insetColors, null);
                 } else {
@@ -397,8 +398,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     shadowAlpha = Math.round(255 * shadowOpacity);
                     highlightColor = ((0xff & highlightAlpha) << 24) | 0xffffff;
                     shadowColor = ((0xff & shadowAlpha) << 24) | 0x000000;
-                    outsetColors = new int[] {Color.TRANSPARENT, shadowColor, Color.TRANSPARENT, highlightColor, Color.TRANSPARENT};
-                    insetColors = new int[] {Color.TRANSPARENT, highlightColor, Color.TRANSPARENT, shadowColor, Color.TRANSPARENT};
+                    outsetColors = new int[]{Color.TRANSPARENT, shadowColor, Color.TRANSPARENT, highlightColor, Color.TRANSPARENT};
+                    insetColors = new int[]{Color.TRANSPARENT, highlightColor, Color.TRANSPARENT, shadowColor, Color.TRANSPARENT};
                     ridgeOutsetShader = new SweepGradient(centerXPx, centerYPx, outsetColors, null);
                     ridgeInsetShader = new SweepGradient(centerXPx, centerYPx, insetColors, null);
                 } else {
