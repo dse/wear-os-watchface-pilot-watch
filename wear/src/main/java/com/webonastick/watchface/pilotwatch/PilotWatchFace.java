@@ -1224,13 +1224,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 //            mTopSubDial.backgroundStyle = WatchDialBackgroundStyle.RADIAL_RIDGED;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mTopSubDial);
-            tickSet1.numberOfTicks = 10;
+            tickSet1.numberOfTicks = 20;
             tickSet1.outerDiameter = 1f;
             tickSet1.innerDiameter = 0.80f;
             tickSet1.strokeWidthVmin = 0.005f;
             tickSet1.nonAmbientOnly = false;
             WatchDialTickSet tickSet2 = new WatchDialTickSet(mTopSubDial);
-            tickSet2.numberOfTicks = 50;
+            tickSet2.numberOfTicks = 100;
             tickSet2.outerDiameter = 1f;
             tickSet2.innerDiameter = 0.90f;
             tickSet2.strokeWidthVmin = 0.0025f;
@@ -2344,6 +2344,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             if (showChronograph) {
                 chronographMs = getStopwatchTimeMs();
+                chronographMs = (chronographMs / 10) * 10; // resolution 1/100 sec
                 if (mDemoTimeMode) {
                     chronographMs = 650 + 1000 * (32 + 60 * (10 + (60 * 10)));
                 }
