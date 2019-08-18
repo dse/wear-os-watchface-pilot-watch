@@ -1174,7 +1174,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mMainDial.circle2Diameter = 0.97f;
             mMainDial.circleStrokeWidthVmin = 0.0025f;
 
-            mMainDial.backgroundStyle = WatchDialBackgroundStyle.RADIAL_RIDGED;
+//            mMainDial.backgroundStyle = WatchDialBackgroundStyle.RADIAL_RIDGED;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mMainDial);
             tickSet1.numberOfTicks = 12;
@@ -1219,9 +1219,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mTopSubDial.addText(0.6f, "6");
             mTopSubDial.addText(0.8f, "8");
 
-            mTopSubDial.borderStyle = WatchDialBorderStyle.INSET;
-            mTopSubDial.borderWidthVmin = 0.02f;
-            mTopSubDial.backgroundStyle = WatchDialBackgroundStyle.RADIAL_RIDGED;
+//            mTopSubDial.borderStyle = WatchDialBorderStyle.INSET;
+//            mTopSubDial.borderWidthVmin = 0.02f;
+//            mTopSubDial.backgroundStyle = WatchDialBackgroundStyle.RADIAL_RIDGED;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mTopSubDial);
             tickSet1.numberOfTicks = 10;
@@ -1258,9 +1258,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mLeftSubDial.addText(0.50f, "6");
             mLeftSubDial.addText(0.75f, "9");
 
-            mLeftSubDial.borderStyle = WatchDialBorderStyle.INSET;
-            mLeftSubDial.borderWidthVmin = 0.02f;
-            mLeftSubDial.backgroundStyle = WatchDialBackgroundStyle.RADIAL_RIDGED;
+//            mLeftSubDial.borderStyle = WatchDialBorderStyle.INSET;
+//            mLeftSubDial.borderWidthVmin = 0.02f;
+//            mLeftSubDial.backgroundStyle = WatchDialBackgroundStyle.RADIAL_RIDGED;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mLeftSubDial);
             tickSet1.numberOfTicks = 12;
@@ -1297,9 +1297,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mBottomSubDial.addText(0.50f, "30");
             mBottomSubDial.addText(0.75f, "45");
 
-            mBottomSubDial.borderStyle = WatchDialBorderStyle.INSET;
-            mBottomSubDial.borderWidthVmin = 0.02f;
-            mBottomSubDial.backgroundStyle = WatchDialBackgroundStyle.RADIAL_RIDGED;
+//            mBottomSubDial.borderStyle = WatchDialBorderStyle.INSET;
+//            mBottomSubDial.borderWidthVmin = 0.02f;
+//            mBottomSubDial.backgroundStyle = WatchDialBackgroundStyle.RADIAL_RIDGED;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mBottomSubDial);
             tickSet1.numberOfTicks = 12;
@@ -1336,6 +1336,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             mBatterySubDial.addText(0.00f, "0%");
             mBatterySubDial.addText(1.00f, "100%");
             mBatterySubDial.typeface = mCondensedTypeface;
+
             // mBatterySubDial.textDirection = WatchDialTextDirection.TEXT_DIRECTION_RADIAL;
 
             WatchDialTickSet tickSet1 = new WatchDialTickSet(mBatterySubDial);
