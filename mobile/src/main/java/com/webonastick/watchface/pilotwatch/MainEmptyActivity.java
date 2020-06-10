@@ -7,13 +7,10 @@ import android.widget.TextView;
 
 public class MainEmptyActivity extends AppCompatActivity {
 
-    private int activity_main_empty;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_empty);
-
         TextView textView = (TextView) findViewById(R.id.versionNumberTextView);
         try {
             PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
