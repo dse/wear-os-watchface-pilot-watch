@@ -13,3 +13,4 @@
 .externalNativeBuild
 releases
 wear/release
+*.aab
