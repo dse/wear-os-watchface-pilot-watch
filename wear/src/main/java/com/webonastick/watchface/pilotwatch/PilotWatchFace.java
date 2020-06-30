@@ -1155,6 +1155,311 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             updateTimer();
         }
 
+        @Override
+        public void onPropertiesChanged(Bundle properties) {
+            cancelMultiTap();
+            super.onPropertiesChanged(properties);
+            mLowBitAmbient = properties.getBoolean(PROPERTY_LOW_BIT_AMBIENT, false);
+            mBurnInProtection = properties.getBoolean(PROPERTY_BURN_IN_PROTECTION, false);
+            mPixelDensity = getResources().getDisplayMetrics().density;
+        }
+
+        @Override
+        public void onTimeTick() {
+            super.onTimeTick();
+            invalidate();
+        }
+
+        @Override
+        public void onAmbientModeChanged(boolean inAmbientMode) {
+            cancelMultiTap();
+            super.onAmbientModeChanged(inAmbientMode);
+            mAmbient = inAmbientMode;
+            if (mShowVersionNumber) {
+                mShowVersionNumber = false;
+                mBackgroundBitmap2 = null;
+            }
+
+            if (mAmbient) {
+                mZoomDayDate = false;
+                updateDials();
+                updateHands();
+                startAmbientUpdates();
+            } else {
+                stopAmbientUpdates();
+                updateDials();
+                updateHands();
+                updateTimer();
+                clearIdle();
+            }
+        }
+
+        @Override
+        public void onInterruptionFilterChanged(int interruptionFilter) {
+            cancelMultiTap();
+            super.onInterruptionFilterChanged(interruptionFilter);
+            boolean inMuteMode = (interruptionFilter == WatchFaceService.INTERRUPTION_FILTER_NONE);
+
+            /* Dim display in mute mode. */
+            if (mMuteMode != inMuteMode) {
+                mMuteMode = inMuteMode;
+                invalidate();
+            }
+        }
+
+        @Override
+        public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            cancelMultiTap();
+            super.onSurfaceChanged(holder, format, width, height);
+
+            mPixelDensity = getResources().getDisplayMetrics().density;
+
+            mZoomDayDate = false;
+            mShowVersionNumber = false;
+
+            mSurfaceCenterXPx = width / 2f;
+            mSurfaceCenterYPx = height / 2f;
+            mSurfaceWidthPx = width;
+            mSurfaceHeightPx = height;
+            mSurfaceVminPx = Math.min(width, height);
+
+            mDialDiameterPx = mSurfaceVminPx - MINIMUM_STROKE_WIDTH_PX;
+            if (getApplicationContext().getResources().getConfiguration().isScreenRound()) {
+                mDialDiameterPx -= ROUND_CHOPPED_PX;
+            }
+
+            mDialRadiusPx = mDialDiameterPx / 2;
+
+            switch (mBezelType) {
+                case BEZEL_SLIDE_RULE:
+                    mClockDialDiameterPx = mDialDiameterPx * mSlideRuleDiameter;
+                    break;
+                case BEZEL_TACHYMETER:
+                    mClockDialDiameterPx = mDialDiameterPx * mTachymeterDiameter;
+                    break;
+                default:
+                    mClockDialDiameterPx = mDialDiameterPx;
+            }
+            mClockDialRadiusPx = mClockDialDiameterPx / 2;
+
+            mDayTextPaint = new Paint();
+            mDayTextPaint.setAntiAlias(true);
+            mDayTextPaint.setTextSize(getClockDialTextSizePx(mDayDateTextSizeVmin));
+            mDayTextPaint.setColor(Color.BLACK);
+            mDayTextPaint.setTextAlign(Paint.Align.CENTER);
+
+            mDateTextPaint = new Paint();
+            mDateTextPaint.setAntiAlias(true);
+            mDateTextPaint.setTextSize(getClockDialTextSizePx(mDayDateTextSizeVmin));
+            mDateTextPaint.setColor(Color.BLACK);
+            mDateTextPaint.setTypeface(mTypeface);
+            mDateTextPaint.setTextAlign(Paint.Align.CENTER);
+
+            updateDials();
+            updateHands();
+
+            initBackgroundBitmap();
+            initBackgroundBitmapZoomDayDate();
+            initAmbientBackgroundBitmap();
+
+            if (!mAmbient) {
+                clearIdle();
+            }
+        }
+
+        /**
+         * Captures tap event (and tap type). The {@link WatchFaceService#TAP_TYPE_TAP} case can be
+         * used for implementing specific logic to handle the gesture.
+         */
+        @Override
+        public void onTapCommand(int tapType, int x, int y, long eventTime) {
+            switch (tapType) {
+                case TAP_TYPE_TOUCH:
+                    // The user has started touching the screen.
+                    break;
+                case TAP_TYPE_TOUCH_CANCEL:
+                    // The user has started a different gesture or otherwise cancelled the tap.
+                    break;
+                case TAP_TYPE_TAP:
+                    if (mZoomDayDate) {
+                        cancelMultiTap();
+                        mZoomDayDate = false;
+                    } else {
+                        if (mTopSubDial.contains(x, y)) {
+                            cancelMultiTap();
+                            stopwatchButton1();
+                            updateTimer();
+                        } else if (mLeftSubDial.contains(x, y)) {
+                            cancelMultiTap();
+                            stopwatchButton2();
+                            updateTimer();
+                        } else if (mBottomSubDial.contains(x, y)) {
+                            multiTapEvent(MULTI_TAP_TYPE_BOTTOM_SUB_DIAL);
+                        } else if (mBatterySubDial.contains(x, y)) {
+                            cancelMultiTap();
+                            mZoomDayDate = true;
+                            updateTimer();
+                        } else if (mLeftSubDial.isBelow(y) && mTopSubDial.isToTheRightOf(x)) {
+                            cancelMultiTap();
+                            mShowVersionNumber = !mShowVersionNumber;
+                            mBackgroundBitmap2 = null;
+                            invalidate();
+                        } else if (isInTapArea(x, y, mSurfaceCenterXPx, mSurfaceCenterYPx)) {
+                            multiTapEvent(MULTI_TAP_TYPE_CENTER_OF_DIAL);
+                        } else {
+                            cancelMultiTap();
+                        }
+                    }
+                    break;
+            }
+            invalidate();
+            if (!mAmbient) {
+                clearIdle();
+            }
+        }
+
+        // BEGIN MULTI-TAP
+
+        private final int TAP_RADIUS_DP = 24;
+
+        private boolean isInTapArea(float x, float y, float cx, float cy) {
+            float dx = x - cx;
+            float dy = y - cy;
+            return dx * dx + dy * dy <= (TAP_RADIUS_DP * TAP_RADIUS_DP * mPixelDensity * mPixelDensity);
+        }
+
+        private final int MULTI_TAP_TYPE_CENTER_OF_DIAL = 1;
+        private final int MULTI_TAP_TYPE_BOTTOM_SUB_DIAL = 2;
+
+        public void onMultiTapCommand(int type, int numberOfTaps) {
+            switch (type) {
+                case MULTI_TAP_TYPE_BOTTOM_SUB_DIAL:
+                    switch (numberOfTaps) {
+                        case 1:
+                            if (mEmulatorMode) {
+                                mPutChronographSecondsOnSubDial = !mPutChronographSecondsOnSubDial;
+                                setUpdateRate();
+                            }
+                            break;
+                        case 2:
+                            if (mEmulatorMode) {
+                                mDemoTimeMode = !mDemoTimeMode;
+                                updateTimer();
+                            }
+                            break;
+                    }
+                    break;
+                case MULTI_TAP_TYPE_CENTER_OF_DIAL:
+                    switch (numberOfTaps) {
+                        // FIXME: what to do here?
+                    }
+                    break;
+            }
+        }
+
+        private MultiTapHandler mMultiTapHandler = null;
+
+        private void multiTapEvent(int type) {
+            if (mMultiTapHandler == null) {
+                mMultiTapHandler = new MultiTapHandler(this);
+            }
+            mMultiTapHandler.onTapEvent(type);
+        }
+
+        private void cancelMultiTap() {
+            if (mMultiTapHandler != null) {
+                mMultiTapHandler.cancel();
+            }
+        }
+
+        // END MULTI-TAP
+
+        @Override
+        public void onDraw(Canvas canvas, Rect bounds) {
+            long now = System.currentTimeMillis();
+
+            if (mDemoTimeMode) {
+                mCalendar.set(2019, 5 /* JUN */, 30, 10, 10, 32);
+            } else {
+                mCalendar.setTimeInMillis(now);
+            }
+
+            int dayOfMonth = mCalendar.get(Calendar.DAY_OF_MONTH);
+            int dayOfWeek = mCalendar.get(Calendar.DAY_OF_WEEK);
+
+            if ((lastDayOfMonth == -1) || (lastDayOfMonth != dayOfMonth) || (lastDayOfWeek == -1) || (lastDayOfWeek != dayOfWeek)) {
+                mBackgroundBitmap2 = null;
+                mBackgroundBitmapZoomDayDate2 = null;
+                mAmbientBackgroundBitmap2 = null;
+            }
+
+            drawBackground(canvas);
+            if (mZoomDayDate) {
+                canvas.save();
+                zoomCanvas(canvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
+            }
+            drawBattery(canvas);
+            drawTimeAndStopwatch(canvas);
+            if (mZoomDayDate) {
+                canvas.restore();
+            }
+            if (!mAmbient) {
+                checkIdle();
+            }
+
+            lastDayOfMonth = dayOfMonth;
+            lastDayOfWeek = dayOfWeek;
+        }
+
+        private void registerReceiver() {
+            if (mRegisteredTimeZoneReceiver) {
+                return;
+            }
+            mRegisteredTimeZoneReceiver = true;
+            IntentFilter filter = new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED);
+            PilotWatchFace.this.registerReceiver(mTimeZoneReceiver, filter);
+        }
+
+        private void unregisterReceiver() {
+            if (!mRegisteredTimeZoneReceiver) {
+                return;
+            }
+            mRegisteredTimeZoneReceiver = false;
+            PilotWatchFace.this.unregisterReceiver(mTimeZoneReceiver);
+        }
+
+        /**
+         * Starts/stops the {@link #mUpdateTimeHandler} timer based on the state of the watch face.
+         */
+        private void updateTimer() {
+            mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
+            if (shouldTimerBeRunning()) {
+                mUpdateTimeHandler.sendEmptyMessage(MSG_UPDATE_TIME);
+            }
+        }
+
+        /**
+         * Returns whether the {@link #mUpdateTimeHandler} timer should be running. The timer
+         * should only run in active mode.
+         */
+        private boolean shouldTimerBeRunning() {
+            return isVisible() && !mAmbient;
+        }
+
+        /**
+         * Handle updating the time periodically in interactive mode.
+         */
+        private void handleUpdateTimeMessage() {
+            invalidate();
+            if (shouldTimerBeRunning()) {
+                long timeMs = System.currentTimeMillis();
+                long delayMs = mUpdateRateMs - (timeMs % mUpdateRateMs);
+                mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
+            }
+        }
+
+        // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
         private void initColors() {
             mBackgroundColor = ContextCompat.getColor(getApplicationContext(), R.color.background_color);
             mHourHandColor = ContextCompat.getColor(getApplicationContext(), R.color.hour_hand_color);
@@ -1474,118 +1779,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 } else {
                     mUpdateRateMs = 200;
                 }
-            }
-        }
-
-        @Override
-        public void onPropertiesChanged(Bundle properties) {
-            cancelMultiTap();
-            super.onPropertiesChanged(properties);
-            mLowBitAmbient = properties.getBoolean(PROPERTY_LOW_BIT_AMBIENT, false);
-            mBurnInProtection = properties.getBoolean(PROPERTY_BURN_IN_PROTECTION, false);
-            mPixelDensity = getResources().getDisplayMetrics().density;
-        }
-
-        @Override
-        public void onTimeTick() {
-            super.onTimeTick();
-            invalidate();
-        }
-
-        @Override
-        public void onAmbientModeChanged(boolean inAmbientMode) {
-            cancelMultiTap();
-            super.onAmbientModeChanged(inAmbientMode);
-            mAmbient = inAmbientMode;
-            if (mShowVersionNumber) {
-                mShowVersionNumber = false;
-                mBackgroundBitmap2 = null;
-            }
-
-            if (mAmbient) {
-                mZoomDayDate = false;
-                updateDials();
-                updateHands();
-                startAmbientUpdates();
-            } else {
-                stopAmbientUpdates();
-                updateDials();
-                updateHands();
-                updateTimer();
-                clearIdle();
-            }
-        }
-
-        @Override
-        public void onInterruptionFilterChanged(int interruptionFilter) {
-            cancelMultiTap();
-            super.onInterruptionFilterChanged(interruptionFilter);
-            boolean inMuteMode = (interruptionFilter == WatchFaceService.INTERRUPTION_FILTER_NONE);
-
-            /* Dim display in mute mode. */
-            if (mMuteMode != inMuteMode) {
-                mMuteMode = inMuteMode;
-                invalidate();
-            }
-        }
-
-        @Override
-        public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            cancelMultiTap();
-            super.onSurfaceChanged(holder, format, width, height);
-
-            mPixelDensity = getResources().getDisplayMetrics().density;
-
-            mZoomDayDate = false;
-            mShowVersionNumber = false;
-
-            mSurfaceCenterXPx = width / 2f;
-            mSurfaceCenterYPx = height / 2f;
-            mSurfaceWidthPx = width;
-            mSurfaceHeightPx = height;
-            mSurfaceVminPx = Math.min(width, height);
-
-            mDialDiameterPx = mSurfaceVminPx - MINIMUM_STROKE_WIDTH_PX;
-            if (getApplicationContext().getResources().getConfiguration().isScreenRound()) {
-                mDialDiameterPx -= ROUND_CHOPPED_PX;
-            }
-
-            mDialRadiusPx = mDialDiameterPx / 2;
-
-            switch (mBezelType) {
-                case BEZEL_SLIDE_RULE:
-                    mClockDialDiameterPx = mDialDiameterPx * mSlideRuleDiameter;
-                    break;
-                case BEZEL_TACHYMETER:
-                    mClockDialDiameterPx = mDialDiameterPx * mTachymeterDiameter;
-                    break;
-                default:
-                    mClockDialDiameterPx = mDialDiameterPx;
-            }
-            mClockDialRadiusPx = mClockDialDiameterPx / 2;
-
-            mDayTextPaint = new Paint();
-            mDayTextPaint.setAntiAlias(true);
-            mDayTextPaint.setTextSize(getClockDialTextSizePx(mDayDateTextSizeVmin));
-            mDayTextPaint.setColor(Color.BLACK);
-            mDayTextPaint.setTextAlign(Paint.Align.CENTER);
-
-            mDateTextPaint = new Paint();
-            mDateTextPaint.setAntiAlias(true);
-            mDateTextPaint.setTextSize(getClockDialTextSizePx(mDayDateTextSizeVmin));
-            mDateTextPaint.setColor(Color.BLACK);
-            mDateTextPaint.setTypeface(mTypeface);
-            mDateTextPaint.setTextAlign(Paint.Align.CENTER);
-
-            updateDials();
-            updateHands();
-
-            initBackgroundBitmap();
-            initBackgroundBitmapZoomDayDate();
-            initAmbientBackgroundBitmap();
-
-            if (!mAmbient) {
-                clearIdle();
             }
         }
 
@@ -2093,148 +2286,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             return dp * mPixelDensity;
         }
 
-        /**
-         * Captures tap event (and tap type). The {@link WatchFaceService#TAP_TYPE_TAP} case can be
-         * used for implementing specific logic to handle the gesture.
-         */
-        @Override
-        public void onTapCommand(int tapType, int x, int y, long eventTime) {
-            switch (tapType) {
-                case TAP_TYPE_TOUCH:
-                    // The user has started touching the screen.
-                    break;
-                case TAP_TYPE_TOUCH_CANCEL:
-                    // The user has started a different gesture or otherwise cancelled the tap.
-                    break;
-                case TAP_TYPE_TAP:
-                    if (mZoomDayDate) {
-                        cancelMultiTap();
-                        mZoomDayDate = false;
-                    } else {
-                        if (mTopSubDial.contains(x, y)) {
-                            cancelMultiTap();
-                            stopwatchButton1();
-                            updateTimer();
-                        } else if (mLeftSubDial.contains(x, y)) {
-                            cancelMultiTap();
-                            stopwatchButton2();
-                            updateTimer();
-                        } else if (mBottomSubDial.contains(x, y)) {
-                            multiTapEvent(MULTI_TAP_TYPE_BOTTOM_SUB_DIAL);
-                        } else if (mBatterySubDial.contains(x, y)) {
-                            cancelMultiTap();
-                            mZoomDayDate = true;
-                            updateTimer();
-                        } else if (mLeftSubDial.isBelow(y) && mTopSubDial.isToTheRightOf(x)) {
-                            cancelMultiTap();
-                            mShowVersionNumber = !mShowVersionNumber;
-                            mBackgroundBitmap2 = null;
-                            invalidate();
-                        } else if (isInTapArea(x, y, mSurfaceCenterXPx, mSurfaceCenterYPx)) {
-                            multiTapEvent(MULTI_TAP_TYPE_CENTER_OF_DIAL);
-                        } else {
-                            cancelMultiTap();
-                        }
-                    }
-                    break;
-            }
-            invalidate();
-            if (!mAmbient) {
-                clearIdle();
-            }
-        }
-
-        private final int TAP_RADIUS_DP = 24;
-
-        private boolean isInTapArea(float x, float y, float cx, float cy) {
-            float dx = x - cx;
-            float dy = y - cy;
-            return dx * dx + dy * dy <= (TAP_RADIUS_DP * TAP_RADIUS_DP * mPixelDensity * mPixelDensity);
-        }
-
-        private final int MULTI_TAP_TYPE_CENTER_OF_DIAL = 1;
-        private final int MULTI_TAP_TYPE_BOTTOM_SUB_DIAL = 2;
-
-        public void onMultiTapCommand(int type, int numberOfTaps) {
-            switch (type) {
-                case MULTI_TAP_TYPE_BOTTOM_SUB_DIAL:
-                    switch (numberOfTaps) {
-                        case 1:
-                            if (mEmulatorMode) {
-                                mPutChronographSecondsOnSubDial = !mPutChronographSecondsOnSubDial;
-                                setUpdateRate();
-                            }
-                            break;
-                        case 2:
-                            if (mEmulatorMode) {
-                                mDemoTimeMode = !mDemoTimeMode;
-                                updateTimer();
-                            }
-                            break;
-                    }
-                    break;
-                case MULTI_TAP_TYPE_CENTER_OF_DIAL:
-                    switch (numberOfTaps) {
-                        // FIXME: what to do here?
-                    }
-                    break;
-            }
-        }
-
-        private MultiTapHandler mMultiTapHandler = null;
-
-        private void multiTapEvent(int type) {
-            if (mMultiTapHandler == null) {
-                mMultiTapHandler = new MultiTapHandler(this);
-            }
-            mMultiTapHandler.onTapEvent(type);
-        }
-
-        private void cancelMultiTap() {
-            if (mMultiTapHandler != null) {
-                mMultiTapHandler.cancel();
-            }
-        }
-
         private int lastDayOfMonth = -1;
         private int lastDayOfWeek = -1;
-
-        @Override
-        public void onDraw(Canvas canvas, Rect bounds) {
-            long now = System.currentTimeMillis();
-
-            if (mDemoTimeMode) {
-                mCalendar.set(2019, 5 /* JUN */, 30, 10, 10, 32);
-            } else {
-                mCalendar.setTimeInMillis(now);
-            }
-
-            int dayOfMonth = mCalendar.get(Calendar.DAY_OF_MONTH);
-            int dayOfWeek = mCalendar.get(Calendar.DAY_OF_WEEK);
-
-            if ((lastDayOfMonth == -1) || (lastDayOfMonth != dayOfMonth) || (lastDayOfWeek == -1) || (lastDayOfWeek != dayOfWeek)) {
-                mBackgroundBitmap2 = null;
-                mBackgroundBitmapZoomDayDate2 = null;
-                mAmbientBackgroundBitmap2 = null;
-            }
-
-            drawBackground(canvas);
-            if (mZoomDayDate) {
-                canvas.save();
-                zoomCanvas(canvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
-            }
-            drawBattery(canvas);
-            drawTimeAndStopwatch(canvas);
-            if (mZoomDayDate) {
-                canvas.restore();
-            }
-            if (!mAmbient) {
-                checkIdle();
-            }
-
-            lastDayOfMonth = dayOfMonth;
-            lastDayOfWeek = dayOfWeek;
-        }
 
         private void drawBackground(Canvas canvas) {
             if (mAmbient) {
@@ -2374,23 +2427,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private void registerReceiver() {
-            if (mRegisteredTimeZoneReceiver) {
-                return;
-            }
-            mRegisteredTimeZoneReceiver = true;
-            IntentFilter filter = new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED);
-            PilotWatchFace.this.registerReceiver(mTimeZoneReceiver, filter);
-        }
-
-        private void unregisterReceiver() {
-            if (!mRegisteredTimeZoneReceiver) {
-                return;
-            }
-            mRegisteredTimeZoneReceiver = false;
-            PilotWatchFace.this.unregisterReceiver(mTimeZoneReceiver);
-        }
-
         private void stopwatchButton1() {
             if (mStopwatchRunning) {
                 pauseStopwatch();
@@ -2436,36 +2472,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 return System.currentTimeMillis() - mStopwatchStartTimeMs + mStopwatchTimeMs;
             }
             return mStopwatchTimeMs;
-        }
-
-        /**
-         * Starts/stops the {@link #mUpdateTimeHandler} timer based on the state of the watch face.
-         */
-        private void updateTimer() {
-            mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
-            if (shouldTimerBeRunning()) {
-                mUpdateTimeHandler.sendEmptyMessage(MSG_UPDATE_TIME);
-            }
-        }
-
-        /**
-         * Returns whether the {@link #mUpdateTimeHandler} timer should be running. The timer
-         * should only run in active mode.
-         */
-        private boolean shouldTimerBeRunning() {
-            return isVisible() && !mAmbient;
-        }
-
-        /**
-         * Handle updating the time periodically in interactive mode.
-         */
-        private void handleUpdateTimeMessage() {
-            invalidate();
-            if (shouldTimerBeRunning()) {
-                long timeMs = System.currentTimeMillis();
-                long delayMs = mUpdateRateMs - (timeMs % mUpdateRateMs);
-                mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
-            }
         }
 
         /**
