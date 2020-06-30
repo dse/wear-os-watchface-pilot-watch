@@ -2474,6 +2474,24 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             return mStopwatchTimeMs;
         }
 
+        private float getClockDialTextSizePx(float vmin) {
+            return mClockDialDiameterPx * vmin;
+        }
+
+        private float vminToPx(float vmin, boolean atLeastOnePixel) {
+            float result = mClockDialDiameterPx * vmin;
+            if (atLeastOnePixel) {
+                result = Math.max(result, 1f);
+            }
+            return result;
+        }
+
+        private float vminToPx(float vmin) {
+            return vminToPx(vmin, false);
+        }
+
+        // BEGIN AMBIENT REFRESH
+
         /**
          * Ambient refresh rate.  If 0, system handles ambient refreshes.
          */
@@ -2566,6 +2584,10 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
+        // END AMBIENT REFRESH
+
+        // BEGIN SCREEN TIMEOUT EXTENDER
+
         private void setCustomTimeout(int seconds) {
             if (seconds > 0) {
                 mCustomTimeoutSeconds = seconds;
@@ -2640,21 +2662,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private float getClockDialTextSizePx(float vmin) {
-            return mClockDialDiameterPx * vmin;
-        }
-
-        private float vminToPx(float vmin, boolean atLeastOnePixel) {
-            float result = mClockDialDiameterPx * vmin;
-            if (atLeastOnePixel) {
-                result = Math.max(result, 1f);
-            }
-            return result;
-        }
-
-        private float vminToPx(float vmin) {
-            return vminToPx(vmin, false);
-        }
+        // END SCREEN TIMEOUT EXTENDER
     }
 
     // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
