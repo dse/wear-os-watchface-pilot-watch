@@ -1766,7 +1766,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
          * Draws clock dial without "Pilot Watch 3000" text, version number text, or day/date.
          */
         private void initBackgroundBitmap() {
-            Log.d(TAG, "redrawing mBackgroundBitmap");
             mBackgroundBitmap = Bitmap.createBitmap(mSurfaceWidthPx, mSurfaceHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmap);
             drawClockDial(backgroundCanvas, false);
@@ -1783,7 +1782,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
          * Draws zoomed-in clock dial without day/date.
          */
         private void initBackgroundBitmapZoomDayDate() {
-            Log.d(TAG, "redrawing mBackgroundBitmapZoomDayDate");
             mBackgroundBitmapZoomDayDate = Bitmap.createBitmap(mSurfaceWidthPx, mSurfaceHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoomDayDate);
             zoomCanvas(backgroundCanvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
@@ -1801,7 +1799,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
          * Draws clock dial without "Pilot Watch 3000" text, version number text, or day/date.
          */
         private void initAmbientBackgroundBitmap() {
-            Log.d(TAG, "redrawing mAmbientBackgroundBitmap");
             mAmbientBackgroundBitmap = Bitmap.createBitmap(mSurfaceWidthPx, mSurfaceHeightPx, Bitmap.Config.ARGB_8888);
             Canvas backgroundCanvas = new Canvas(mAmbientBackgroundBitmap);
             drawClockDial(backgroundCanvas, true);
@@ -1821,7 +1818,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             if (mBackgroundBitmap2 != null) {
                 return;
             }
-            Log.d(TAG, "redrawing mBackgroundBitmap2");
             mBackgroundBitmap2 = Bitmap.createBitmap(mBackgroundBitmap);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmap2);
             drawDate(backgroundCanvas, false);
@@ -1835,7 +1831,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             if (mBackgroundBitmapZoomDayDate2 != null) {
                 return;
             }
-            Log.d(TAG, "redrawing mBackgroundBitmapZoomDayDate2");
             mBackgroundBitmapZoomDayDate2 = Bitmap.createBitmap(mBackgroundBitmapZoomDayDate);
             Canvas backgroundCanvas = new Canvas(mBackgroundBitmapZoomDayDate2);
             zoomCanvas(backgroundCanvas, mDayDateLeftPx, mDayDateRightPx, mDayDateTopPx, mDayDateBottomPx);
@@ -1849,7 +1844,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             if (mAmbientBackgroundBitmap2 != null) {
                 return;
             }
-            Log.d(TAG, "redrawing mAmbientBackgroundBitmap2");
             mAmbientBackgroundBitmap2 = Bitmap.createBitmap(mAmbientBackgroundBitmap);
             Canvas backgroundCanvas = new Canvas(mAmbientBackgroundBitmap2);
             drawDate(backgroundCanvas, true);
