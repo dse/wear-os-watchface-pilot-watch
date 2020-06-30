@@ -2657,6 +2657,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
     }
 
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
     private void drawVerticallyCenteredText(Canvas canvas, String text, float x, float y, Paint paint) {
         canvas.drawText(text, x, y + paint.getTextSize() * TEXT_CAP_HEIGHT / 2, paint);
     }
