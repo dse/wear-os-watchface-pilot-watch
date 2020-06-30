@@ -1,34 +1,5 @@
 package com.webonastick.watchface.pilotwatch;
 
-/**
- * <h1>
- * Pilot Watch 3000, a watch face for Wear OS and Android Wear.
- * </h1>
- * <p>
- * Notes about variable names:
- * </p>
- * <ul>
- * <li>
- * A lot of them end with units.
- * </li>
- * <li>
- * Px means pixels.
- * </li>
- * <li>
- * Vmin is the proportion, between 0.0 and 1.0, of the viewport's width or height, whichever is less.
- * </li>
- * <li>
- * All angles are assumed to be degrees unless otherwise indicated.
- * </li>
- * <li>
- * Pct means Percentage.
- * </li>
- * </ul>
- * <p>
- * This source code may contain experimental features, some of which may be unused.
- * </p>
- */
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -71,8 +42,9 @@ import java.util.concurrent.TimeUnit;
 import static android.app.AlarmManager.RTC_WAKEUP;
 
 public class PilotWatchFace extends CanvasWatchFaceService {
+    private static final String TAG = "PilotWatchFace";
 
-    /*
+    /**
      * Updates rate in milliseconds for interactive mode. We update
      * once a second to advance the second hand.
      */
@@ -158,7 +130,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
     private static final int ROUND_CHOPPED_PX = 1;
 
     private class Engine extends CanvasWatchFaceService.Engine implements MultiTapEventHandler {
-        private static final String TAG = "PilotWatchFace";
 
         /* Handler to update the time once a second in interactive mode. */
         private final Handler mUpdateTimeHandler = new EngineHandler(this);
