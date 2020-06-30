@@ -131,6 +131,11 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
     private class Engine extends CanvasWatchFaceService.Engine implements MultiTapEventHandler {
 
+        Engine() {
+            super();
+            // super(true); // when ready to mess with hardware acceleration
+        }
+
         /* Handler to update the time once a second in interactive mode. */
         private final Handler mUpdateTimeHandler = new EngineHandler(this);
         private Calendar mCalendar;
