@@ -37,6 +37,8 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import com.webonastick.watchface.AmbientRefresher;
+import com.webonastick.watchface.MultiTapEventHandler;
+import com.webonastick.watchface.MultiTapHandler;
 import com.webonastick.watchface.ScreenTimeExtender;
 
 public class PilotWatchFace extends CanvasWatchFaceService {

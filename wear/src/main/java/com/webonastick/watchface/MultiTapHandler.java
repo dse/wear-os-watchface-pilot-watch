@@ -1,4 +1,4 @@
-package com.webonastick.watchface.pilotwatch;
+package com.webonastick.watchface;
 
 import android.os.Handler;
 
