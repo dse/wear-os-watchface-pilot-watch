@@ -41,6 +41,9 @@ import java.util.concurrent.TimeUnit;
 
 import static android.app.AlarmManager.RTC_WAKEUP;
 
+import com.webonastick.watchface.AmbientRefresher;
+import com.webonastick.watchface.ScreenTimeExtender;
+
 public class PilotWatchFace extends CanvasWatchFaceService {
     private static final String TAG = "PilotWatchFace";
 
@@ -1120,11 +1123,18 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             initDials();
             initHands();
 
-            clearIdle();
             updateDials();
             updateHands();
 
-            setCustomTimeout(15);
+            mAmbientRefresher = new AmbientRefresher(PilotWatchFace.this, new Runnable() {
+                @Override
+                public void run() {
+                    invalidate();
+                }
+            });
+
+            mScreenTimeExtender = new ScreenTimeExtender(PilotWatchFace.this);
+            mScreenTimeExtender.clearIdle();
         }
 
         @Override
@@ -1184,13 +1194,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 mZoomDayDate = false;
                 updateDials();
                 updateHands();
-                startAmbientUpdates();
+                mAmbientRefresher.start();
             } else {
-                stopAmbientUpdates();
+                mAmbientRefresher.stop();
                 updateDials();
                 updateHands();
                 updateTimer();
-                clearIdle();
+                mScreenTimeExtender.clearIdle();
             }
         }
 
@@ -1263,7 +1273,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             initAmbientBackgroundBitmap();
 
             if (!mAmbient) {
-                clearIdle();
+                mScreenTimeExtender.clearIdle();
             }
         }
 
@@ -1314,7 +1324,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
             invalidate();
             if (!mAmbient) {
-                clearIdle();
+                mScreenTimeExtender.clearIdle();
             }
         }
 
@@ -1404,7 +1414,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 canvas.restore();
             }
             if (!mAmbient) {
-                checkIdle();
+                mScreenTimeExtender.checkIdle();
             }
 
             lastDayOfMonth = dayOfMonth;
@@ -2490,179 +2500,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             return vminToPx(vmin, false);
         }
 
-        // BEGIN AMBIENT REFRESH
-
-        /**
-         * Ambient refresh rate.  If 0, system handles ambient refreshes.
-         */
-        private int mAmbientUpdateRateSeconds = 10;
-
-        private static final String AMBIENT_UPDATE_ACTION = "com.webonastick.watchface.pilotwatch.action.AMBIENT_UPDATE";
-        private Intent mAmbientUpdateIntent = null;
-        private PendingIntent mAmbientUpdatePendingIntent = null;
-        private BroadcastReceiver mAmbientUpdateBroadcastReceiver = null;
-        private AlarmManager mAmbientUpdateAlarmManager = null;
-        private IntentFilter mAmbientUpdateIntentFilter = null;
-        private boolean mAmbientUpdateReceiverRegistered = false;
-
-        private Handler mAmbientUpdateHandler = null;
-        private Runnable mAmbientUpdateRunnable = null;
-
-        /**
-         * Handle time updates in ambient mode.
-         */
-        private void handleAmbientUpdate() {
-            if (!mAmbient || mAmbientUpdateRateSeconds == 0) {
-                return;
-            }
-            if (mAmbientUpdateRateSeconds <= 5) {
-                if (mAmbientUpdateHandler == null) {
-                    mAmbientUpdateHandler = new Handler();
-                    mAmbientUpdateRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            invalidate();
-                            handleAmbientUpdate();
-                        }
-                    };
-                }
-                long timeMs = System.currentTimeMillis();
-                long delayMs = (mAmbientUpdateRateSeconds * 1000) - timeMs % (mAmbientUpdateRateSeconds * 1000);
-                long triggerTimeMs = timeMs + delayMs;
-                mAmbientUpdateHandler.postDelayed(mAmbientUpdateRunnable, delayMs);
-                return;
-            }
-
-            if (mAmbientUpdateAlarmManager == null) {
-                mAmbientUpdateAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                mAmbientUpdateIntent = new Intent(AMBIENT_UPDATE_ACTION);
-                mAmbientUpdatePendingIntent = PendingIntent.getBroadcast(
-                        getBaseContext(), 0, mAmbientUpdateIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                );
-                mAmbientUpdateBroadcastReceiver = new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        invalidate();
-                        handleAmbientUpdate();
-                    }
-                };
-                mAmbientUpdateIntentFilter = new IntentFilter(AMBIENT_UPDATE_ACTION);
-            }
-            if (!mAmbientUpdateReceiverRegistered) {
-                PilotWatchFace.this.registerReceiver(mAmbientUpdateBroadcastReceiver, mAmbientUpdateIntentFilter);
-                mAmbientUpdateReceiverRegistered = true;
-            }
-
-            long timeMs = System.currentTimeMillis();
-            long delayMs = (mAmbientUpdateRateSeconds * 1000) - timeMs % (mAmbientUpdateRateSeconds * 1000);
-            long triggerTimeMs = timeMs + delayMs;
-            mAmbientUpdateAlarmManager.setExact(RTC_WAKEUP, triggerTimeMs, mAmbientUpdatePendingIntent);
-        }
-
-        private void startAmbientUpdates() {
-            if (!mAmbient || mAmbientUpdateRateSeconds == 0) {
-                return;
-            }
-            handleAmbientUpdate();
-        }
-
-        private void stopAmbientUpdates() {
-            if (!mAmbient || mAmbientUpdateRateSeconds == 0) {
-                return;
-            }
-            if (mAmbientUpdateRateSeconds <= 5) {
-                if (mAmbientUpdateHandler != null) {
-                    mAmbientUpdateHandler.removeCallbacks(mAmbientUpdateRunnable);
-                }
-            }
-            if (mAmbientUpdateAlarmManager != null) {
-                mAmbientUpdateAlarmManager.cancel(mAmbientUpdatePendingIntent);
-            }
-            if (mAmbientUpdateReceiverRegistered) {
-                PilotWatchFace.this.unregisterReceiver(mAmbientUpdateBroadcastReceiver);
-                mAmbientUpdateReceiverRegistered = false;
-            }
-        }
-
-        // END AMBIENT REFRESH
-
-        // BEGIN SCREEN TIMEOUT EXTENDER
-
-        private void setCustomTimeout(int seconds) {
-            if (seconds > 0) {
-                mCustomTimeoutSeconds = seconds;
-                acquireWakeLock();
-            } else {
-                mCustomTimeoutSeconds = 0;
-                releaseWakeLock();
-            }
-        }
-
-        private void clearCustomTimeout() {
-            mCustomTimeoutSeconds = 0;
-            releaseWakeLock();
-        }
-
-        /**
-         * Call after user activity, screen change, etc.
-         */
-        private void clearIdle() {
-            if (mCustomTimeoutSeconds <= 0) {
-                return;
-            }
-            acquireWakeLock();
-        }
-
-        /**
-         * Called after every draw.
-         * Use this to clear a 'keep screen on' flag or something.
-         * DO NOT DELETE THIS METHOD.  Keep it as a placeholder.
-         */
-        private void checkIdle() {
-            if (mCustomTimeoutSeconds <= 0) {
-                return;
-            }
-            // DO NOT DELETE THIS METHOD.
-        }
-
-        private void acquireWakeLock() {
-            if (mFullWakeLockDenied) {
-                return;
-            }
-            if (mPowerManager == null) {
-                try {
-                    mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
-                } catch (Exception e) {
-                    Log.e(TAG, "error creating PowerManager object: " + e.getLocalizedMessage());
-                    mFullWakeLockDenied = true;
-                    return;
-                }
-            }
-            if (mWakeLock == null) {
-                try {
-                    mWakeLock = mPowerManager.newWakeLock(
-                            PowerManager.FULL_WAKE_LOCK,
-                            "PilotWatch::WakeLockTag"
-                    );
-                } catch (Exception e) {
-                    Log.e(TAG, "error creating full wake lock: " + e.getLocalizedMessage());
-                    mFullWakeLockDenied = true;
-                    return;
-                }
-            }
-            mWakeLock.acquire(mCustomTimeoutSeconds * 1000L);
-        }
-
-        private void releaseWakeLock() {
-            if (mFullWakeLockDenied) {
-                return;
-            }
-            if (mWakeLock != null) {
-                mWakeLock.release();
-            }
-        }
-
-        // END SCREEN TIMEOUT EXTENDER
+        private ScreenTimeExtender mScreenTimeExtender;
+        private AmbientRefresher   mAmbientRefresher;
     }
 
     // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
