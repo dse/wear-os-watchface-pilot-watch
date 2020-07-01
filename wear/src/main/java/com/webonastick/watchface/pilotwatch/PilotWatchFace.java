@@ -1,7 +1,5 @@
 package com.webonastick.watchface.pilotwatch;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -26,7 +24,6 @@ import androidx.core.content.ContextCompat;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.util.Pair;
 
@@ -38,8 +35,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-
-import static android.app.AlarmManager.RTC_WAKEUP;
 
 import com.webonastick.watchface.AmbientRefresher;
 import com.webonastick.watchface.ScreenTimeExtender;
@@ -84,48 +79,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
     }
 
-    public static class MoreMath {
-        public static float mod(float x, float y) {
-            return x - (float) Math.floor(x / y) * y;
-        }
-
-        public static float window(float x, float min, float max) {
-            float result = x;
-            result = Math.min(result, max);
-            result = Math.max(result, min);
-            return result;
-        }
-    }
-
-    enum BezelType {
-        BEZEL_NONE,
-        BEZEL_SLIDE_RULE,
-        BEZEL_TACHYMETER
-    }
-
-    enum WatchDialTextDirection {
-        TEXT_DIRECTION_HORIZONTAL,
-        TEXT_DIRECTION_TANGENTIAL,
-        TEXT_DIRECTION_RADIAL
-    }
-
-    enum SlideRuleDial {
-        SLIDE_RULE_DIAL_INNER,
-        SLIDE_RULE_DIAL_OUTER
-    }
-
-    enum WatchDialBorderStyle {
-        NONE,
-        SOLID,
-        INSET,
-        OUTSET
-    }
-
-    enum WatchDialBackgroundStyle {
-        NONE,
-        RADIAL_RIDGED
-    }
-
     private static final float TEXT_ROTATION_FUDGE_FACTOR = 1f;
     private static final float TEXT_CAP_HEIGHT = 0.7f;
 
@@ -164,7 +117,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private int mSecondHandColor;
         private int mTickColor;
 
-        private BezelType mBezelType = BezelType.BEZEL_NONE;
+        private Utility.BezelType mBezelType = Utility.BezelType.BEZEL_NONE;
         private float mSlideRuleDiameter = 0.8f;
         private float mTachymeterDiameter = 0.9f;
 
@@ -288,7 +241,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public int backgroundColor = Color.TRANSPARENT;
             public float backgroundBrightness = 0f;
 
-            public WatchDialTextDirection textDirection = WatchDialTextDirection.TEXT_DIRECTION_HORIZONTAL;
+            public Utility.WatchDialTextDirection textDirection = Utility.WatchDialTextDirection.TEXT_DIRECTION_HORIZONTAL;
 
             private float radiusPx;
             private float contentRadiusPx;
@@ -304,8 +257,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             private float shadowDXPx = 0;
             private float shadowDYPx = 1;
 
-            public WatchDialBorderStyle borderStyle = WatchDialBorderStyle.NONE;
-            public WatchDialBackgroundStyle backgroundStyle = WatchDialBackgroundStyle.NONE;
+            public Utility.WatchDialBorderStyle borderStyle = Utility.WatchDialBorderStyle.NONE;
+            public Utility.WatchDialBackgroundStyle backgroundStyle = Utility.WatchDialBackgroundStyle.NONE;
 
             public float borderWidthVmin = 0f;
             private float borderWidthPx = 0f;
@@ -354,9 +307,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 int[] outsetColors;
                 int[] insetColors;
 
-                if (borderStyle == WatchDialBorderStyle.INSET || borderStyle == WatchDialBorderStyle.OUTSET) {
-                    highlightOpacity = MoreMath.window(mBorderHighlight, 0f, 1f);
-                    shadowOpacity = MoreMath.window(mBorderShadow, 0f, 1f);
+                if (borderStyle == Utility.WatchDialBorderStyle.INSET || borderStyle == Utility.WatchDialBorderStyle.OUTSET) {
+                    highlightOpacity = Utility.clamp(mBorderHighlight, 0f, 1f);
+                    shadowOpacity = Utility.clamp(mBorderShadow, 0f, 1f);
                     highlightAlpha = Math.round(255 * highlightOpacity);
                     shadowAlpha = Math.round(255 * shadowOpacity);
                     highlightColor = ((0xff & highlightAlpha) << 24) | 0xffffff;
@@ -370,9 +323,9 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     borderInsetShader = null;
                 }
 
-                if (backgroundStyle == WatchDialBackgroundStyle.RADIAL_RIDGED) {
-                    highlightOpacity = MoreMath.window(mRidgeHighlight, 0f, 1f);
-                    shadowOpacity = MoreMath.window(mRidgeShadow, 0f, 1f);
+                if (backgroundStyle == Utility.WatchDialBackgroundStyle.RADIAL_RIDGED) {
+                    highlightOpacity = Utility.clamp(mRidgeHighlight, 0f, 1f);
+                    shadowOpacity = Utility.clamp(mRidgeShadow, 0f, 1f);
                     highlightAlpha = Math.round(255 * highlightOpacity);
                     shadowAlpha = Math.round(255 * shadowOpacity);
                     highlightColor = ((0xff & highlightAlpha) << 24) | 0xffffff;
@@ -460,13 +413,13 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 canvas.drawCircle(centerXPx, centerYPx, radiusPx, paint);
 
                 if (backgroundBrightness < 0f) {
-                    backgroundBrightness = -1 * MoreMath.window(backgroundBrightness, -1f, 0f);
+                    backgroundBrightness = -1 * Utility.clamp(backgroundBrightness, -1f, 0f);
                     int alpha = Math.round(255 * backgroundBrightness);
                     int color = (0xff & alpha) << 24 | 0x000000;
                     paint.setColor(color);
                     canvas.drawCircle(centerXPx, centerYPx, radiusPx, paint);
                 } else if (backgroundBrightness > 0f) {
-                    backgroundBrightness = MoreMath.window(backgroundBrightness, 0f, 1f);
+                    backgroundBrightness = Utility.clamp(backgroundBrightness, 0f, 1f);
                     int alpha = Math.round(255 * backgroundBrightness);
                     int color = (0xff & alpha) << 24 | 0xffffff;
                     paint.setColor(color);
@@ -477,7 +430,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             public void drawBackgroundStyle(Canvas canvas, boolean ambient) {
-                if (ambient || backgroundStyle == WatchDialBackgroundStyle.NONE) {
+                if (ambient || backgroundStyle == Utility.WatchDialBackgroundStyle.NONE) {
                     return;
                 }
                 switch (backgroundStyle) {
@@ -675,20 +628,20 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                     Paint.Align textAlign = Paint.Align.CENTER;
                     switch (textDirection) {
                         case TEXT_DIRECTION_TANGENTIAL:
-                            textAngle = MoreMath.mod(angle, 360f);
+                            textAngle = Utility.mod(angle, 360f);
                             break;
                         case TEXT_DIRECTION_RADIAL:
-                            textAngle = MoreMath.mod(angle + 90f, 360f);
+                            textAngle = Utility.mod(angle + 90f, 360f);
                             break;
                     }
                     if (textAngle != 0f) {
-                        if (textDirection == WatchDialTextDirection.TEXT_DIRECTION_RADIAL) {
+                        if (textDirection == Utility.WatchDialTextDirection.TEXT_DIRECTION_RADIAL) {
                             textAlign = Paint.Align.RIGHT;
                         }
                         if (textAngle >= (90f + TEXT_ROTATION_FUDGE_FACTOR) &&
                                 textAngle <= (270f - TEXT_ROTATION_FUDGE_FACTOR)) {
-                            textAngle = MoreMath.mod(textAngle + 180f, 360f);
-                            if (textDirection == WatchDialTextDirection.TEXT_DIRECTION_TANGENTIAL) {
+                            textAngle = Utility.mod(textAngle + 180f, 360f);
+                            if (textDirection == Utility.WatchDialTextDirection.TEXT_DIRECTION_TANGENTIAL) {
                                 textAlign = Paint.Align.LEFT;
                             }
                         }
@@ -753,7 +706,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             public boolean containsAngle(float angle) {
                 float maxAngle = Math.max(startAngle, endAngle);
                 float minAngle = Math.min(startAngle, endAngle);
-                angle = angle - MoreMath.mod(minAngle, 360f) + minAngle;
+                angle = angle - Utility.mod(minAngle, 360f) + minAngle;
                 return angle >= minAngle && angle <= maxAngle;
             }
 
@@ -801,8 +754,8 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
 
             private void drawBorder(Canvas canvas, boolean ambient) {
-                if (ambient || borderWidthPx <= 0f || borderStyle == WatchDialBorderStyle.NONE ||
-                        (borderColor == Color.TRANSPARENT && borderStyle == WatchDialBorderStyle.SOLID)) {
+                if (ambient || borderWidthPx <= 0f || borderStyle == Utility.WatchDialBorderStyle.NONE ||
+                        (borderColor == Color.TRANSPARENT && borderStyle == Utility.WatchDialBorderStyle.SOLID)) {
                     return;
                 }
                 Paint borderPaint = new Paint();
@@ -1804,7 +1757,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
 
         private float slideRuleDegrees(float x) {
-            return MoreMath.mod((float) Math.log10(x), 1.0f) * 360f;
+            return Utility.mod((float) Math.log10(x), 1.0f) * 360f;
         }
 
         private void drawSlideRuleTick(Canvas canvas, boolean ambient, float x, float y, Paint paint) {
@@ -1828,7 +1781,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             /* if x is 240, return 90 */
             /* if x is 120, return 180 */
 
-            return MoreMath.mod(60f / x, 1) * 360f;
+            return Utility.mod(60f / x, 1) * 360f;
         }
 
         private void drawTachymeterTick(Canvas canvas, boolean ambient, float x, float y, Paint paint) {
@@ -1888,14 +1841,14 @@ public class PilotWatchFace extends CanvasWatchFaceService {
 
             int[] slideRulePoints = {10, 11, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90};
             for (int point : slideRulePoints) {
-                drawSlideRuleText(canvas, ambient, point, Integer.toString(point), SlideRuleDial.SLIDE_RULE_DIAL_INNER, textPaint);
-                drawSlideRuleText(canvas, ambient, point, Integer.toString(point), SlideRuleDial.SLIDE_RULE_DIAL_OUTER, textPaint);
+                drawSlideRuleText(canvas, ambient, point, Integer.toString(point), Utility.SlideRuleDial.SLIDE_RULE_DIAL_INNER, textPaint);
+                drawSlideRuleText(canvas, ambient, point, Integer.toString(point), Utility.SlideRuleDial.SLIDE_RULE_DIAL_OUTER, textPaint);
             }
         }
 
         private void drawSlideRuleText(Canvas canvas, boolean ambient,
                                        float x, String text,
-                                       SlideRuleDial slideRuleDial,
+                                       Utility.SlideRuleDial slideRuleDial,
                                        Paint textPaint) {
             float degrees = slideRuleDegrees(x);
             float radiusPx = mDialRadiusPx;
