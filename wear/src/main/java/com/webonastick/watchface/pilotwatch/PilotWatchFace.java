@@ -56,6 +56,12 @@ public class PilotWatchFace extends CanvasWatchFaceService {
      */
     private static final int MSG_UPDATE_TIME = 0;
 
+    private static final float TEXT_ROTATION_FUDGE_FACTOR = 1f;
+    private static final float TEXT_CAP_HEIGHT = 0.7f;
+
+    /* On at least two round watches the outer border won't display unless you factor this. */
+    private static final int ROUND_CHOPPED_PX = 1;
+
     @Override
     public Engine onCreateEngine() {
         return new Engine();
@@ -81,12 +87,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         }
     }
 
-    private static final float TEXT_ROTATION_FUDGE_FACTOR = 1f;
-    private static final float TEXT_CAP_HEIGHT = 0.7f;
-
-    /* On at least two round watches the outer border won't display unless you factor this. */
-    private static final int ROUND_CHOPPED_PX = 1;
-
     private class Engine extends CanvasWatchFaceService.Engine implements MultiTapEventHandler {
 
         Engine() {
@@ -104,6 +104,7 @@ public class PilotWatchFace extends CanvasWatchFaceService {
                 invalidate();
             }
         };
+
         private boolean mRegisteredTimeZoneReceiver = false;
         private boolean mMuteMode;
 
