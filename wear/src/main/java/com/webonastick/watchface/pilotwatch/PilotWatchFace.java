@@ -219,6 +219,16 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private float mBorderHighlight = 0.2f;
         private float mBorderShadow = 0.8f;
 
+        private HashMap<String, Integer> mDayFontStretchMap = new HashMap<String, Integer>();
+
+        private static final float PADDING_DP = 4;
+
+        private int lastDayOfMonth = -1;
+        private int lastDayOfWeek = -1;
+
+        private ScreenTimeExtender mScreenTimeExtender;
+        private AmbientRefresher   mAmbientRefresher;
+
         private class WatchDial {
             public WeakReference<Engine> engineWeakReference;
 
@@ -2024,8 +2034,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             drawWatchFaceName(backgroundCanvas, true);
         }
 
-        private HashMap<String, Integer> mDayFontStretchMap = new HashMap<String, Integer>();
-
         private void drawClockDial(Canvas canvas, boolean ambient) {
             canvas.drawColor(Color.WHITE);
 
@@ -2242,8 +2250,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private static final float PADDING_DP = 4;
-
         private float getPaddingPx() {
             return PADDING_DP * mPixelDensity;
         }
@@ -2251,9 +2257,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private float dpToPx(float dp) {
             return dp * mPixelDensity;
         }
-
-        private int lastDayOfMonth = -1;
-        private int lastDayOfWeek = -1;
 
         private void drawBackground(Canvas canvas) {
             if (mAmbient) {
@@ -2455,9 +2458,6 @@ public class PilotWatchFace extends CanvasWatchFaceService {
         private float vminToPx(float vmin) {
             return vminToPx(vmin, false);
         }
-
-        private ScreenTimeExtender mScreenTimeExtender;
-        private AmbientRefresher   mAmbientRefresher;
     }
 
     // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
